@@ -1,0 +1,33 @@
+image:
+  registry: ghcr.io
+  repository: renovatebot/renovate
+  tag: 37.102.1
+  
+cronjob:
+  schedule: '*/30 * * * *'
+  timeZone: 'Europe/Berlin'
+
+envFrom:
+  #Fetch Github Release Notes
+  #Access to my repos (part of renovate config -> token)
+  - secretRef:
+      name: git-tokens
+      
+#env:
+#  LOG_LEVEL: debug
+
+renovate:
+  config: |
+    {
+      "platform": "github",
+      "endpoint": "https://api.github.com/api/v3",
+      "gitAuthor": "Renovate Bot <renovate-bot@github.com>",
+      "autodiscover": false,
+      "printConfig": true,
+      "repositories": ["5olu7ion/k8s"],
+      "automergeSchedule": ["after 2:15am, before 3:05am"]
+    }
+  persistence:
+    cache:
+      enabled: true
+      storageClass: "nfs-client"

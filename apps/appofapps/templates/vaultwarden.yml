@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vaultwarden
+  namespace: argocd
+  annotations:
+spec:
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    namespace: vaultwarden
+    server: 'https://kubernetes.default.svc'
+  sources:
+    - repoURL: 'https://charts.gabe565.com'
+      chart: vaultwarden
+      targetRevision: 0.11.2
+      helm:
+        valueFiles:
+          - $values/apps/vaultwarden/values.yml
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      path: apps/vaultwarden/extra
+      targetRevision: HEAD
+  project: default

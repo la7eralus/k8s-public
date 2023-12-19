@@ -1,0 +1,76 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: paperless-ngx
+spec:
+  routes:
+    - match: Host(`paperless.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: paperless-ngx
+          port: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: redis
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: redis
+      app.kubernetes.io/name: redis
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: redis
+        app.kubernetes.io/name: redis
+    spec:
+      containers:
+        - image: docker.io/library/redis:7.2.3
+          name: redis
+          ports:
+            - containerPort: 6379
+              name: redis
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: redis
+      restartPolicy: Always
+      volumes:
+        - name: redis
+          persistentVolumeClaim:
+            claimName: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: redis
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: redis
+    app.kubernetes.io/name: redis
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs-client

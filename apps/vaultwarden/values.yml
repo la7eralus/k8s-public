@@ -1,0 +1,24 @@
+#
+# IMPORTANT NOTE
+#
+# This chart inherits from our common library chart. You can check the default values/options here:
+# https://github.com/bjw-s/helm-charts/blob/a081de5/charts/library/common/values.yaml
+#
+
+image:
+  repository: docker.io/vaultwarden/server
+  pullPolicy: IfNotPresent
+  tag: 1.30.1-alpine
+
+service:
+  main:
+    ports:
+      http:
+        port: 8080
+
+persistence:
+  data:
+    enabled: true
+    storageClass: "nfs-client"
+    accessMode: ReadWriteOnce
+    size: 1Gi

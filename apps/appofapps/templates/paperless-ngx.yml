@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: paperless-ngx
+  namespace: argocd
+  annotations:
+spec:
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    namespace: paperless-ngx
+    server: 'https://kubernetes.default.svc'
+  sources:
+    - repoURL: 'https://charts.gabe565.com'
+      chart: paperless-ngx
+      targetRevision: 0.9.2
+      helm:
+        valueFiles:
+          - $values/apps/paperless-ngx/values.yml
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      path: apps/paperless-ngx/extra
+      targetRevision: HEAD
+  project: default

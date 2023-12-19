@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    namespace: traefik
+    server: 'https://kubernetes.default.svc'
+  sources:
+    - repoURL: 'https://traefik.github.io/charts'
+      chart: traefik
+      targetRevision: 26.0.0
+      helm:
+        valueFiles:
+          - $values/apps/traefik/values.yml
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      targetRevision: HEAD
+      ref: values
+  project: default

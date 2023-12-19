@@ -1,0 +1,94 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: homepage
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: homepage
+      app.kubernetes.io/name: homepage
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: homepage
+        app.kubernetes.io/name: homepage
+    spec:
+      containers:
+        - image: ghcr.io/gethomepage/homepage:v0.8.3
+          name: homepage
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/config
+              name: config
+            - mountPath: /app/public/icons
+              name: icons
+      restartPolicy: Always
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: config
+        - name: icons
+          persistentVolumeClaim:
+            claimName: icons
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: homepage
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: homepage
+    app.kubernetes.io/name: homepage
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: homepage
+spec:
+  routes:
+    - match: Host(`homepage.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: homepage
+          port: 80
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+  storageClassName: nfs-client
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: icons
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+  storageClassName: nfs-client

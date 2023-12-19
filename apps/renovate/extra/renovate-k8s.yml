@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: git-tokens
+spec:
+  encryptedData:
+    RENOVATE_TOKEN: AgClTAFG7nu5mhU4lpW3E0fLehgL7PDiedCRm/UnbsLmj9eo7M/ixMBDD2oXA39myPt6Uo7ZfSAYGNwAsCWsCnm3eb2FHdYRY4I+9ivTjYoCW+vSq/26+Wd3bxTTRZw9KDgdL0yYDe2DcxyId+WDZ8uDSmEmAwJAScubOLQRoVWgkii2m9kaxicJbJ8PxkvZbnToKIqLfqpmCytAbqn44rW4mnhJC4pulgcnpylJBQmeVq/bCi6fG1Lq7hOkwKVtsvt/vXQMmD5CW6buKsJyFp+0278Q9PWL5GyZnD516BckbWk2xO0xJthSFAPcGrIsTUo93wg8h2XZWf94wtQVzGRdEs+qxtCtVX9N8Fzza/xNjDYYsMSgnOcnmB3QX/lq9a5YlSclclXyU3m9q8KWqe2djECNU0kobWAzkEVQ3bQdWT3QgQ4c6zGA8Rk208H1bbyHzA+kxV9RwE4K8GAOiP+5LfAUOX64helSv4zY/DRq+N1ehDc3PFgB+CdejGuvDOsUk87jR5hcag8vq+tHjb6uMWaFXunHMDeQM5yn6uOcAg1VuP9ujEf9BvSZg+aA4RdphShBDi9r24DvSnJbFflaoOHjtKNtzk1VebaQQ+EZlUcloSaFm/f0QEA2tDEzePKhGCmqo47KsnLLreUqjFLQRGvHK+HRT1jwKLPa3PvqIZY4V3hbL6US5fHBH8x6/Y83VODKtCfk4rSxrmk9hMihC674qbws6gD7P2+1jPvAPM35vIz2ctNcFTL7YuD/Rd/F6VlUTYOBMN3ymgd6eJckV/7Bg0xrZ4SWX4oXwbSTO65Z/1tiD78TmC95doY=
+  template:
+    metadata:
+      creationTimestamp: null
+      name: git-tokens
+      namespace: renovate
+    type: Opaque

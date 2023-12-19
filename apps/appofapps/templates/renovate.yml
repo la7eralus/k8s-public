@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: renovate
+  namespace: argocd
+  annotations:
+spec:
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    namespace: renovate
+    server: 'https://kubernetes.default.svc'
+  sources:
+    - repoURL: 'https://docs.renovatebot.com/helm-charts'
+      chart: renovate
+      targetRevision: 37.102.1
+      helm:
+        valueFiles:
+          - $values/apps/renovate/values.yml
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      path: apps/renovate/extra
+      targetRevision: HEAD
+  project: default

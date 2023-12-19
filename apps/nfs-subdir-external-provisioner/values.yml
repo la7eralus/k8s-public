@@ -1,0 +1,12 @@
+image:
+  repository: registry.k8s.io/sig-storage/nfs-subdir-external-provisioner
+  tag: v4.0.2
+  
+nfs:
+  server: 192.168.4.33 
+  path: /volume1/k8s 
+  
+storageClass:
+  defaultClass: true
+  pathPattern: ${.PVC.namespace}/${.PVC.name}
+  onDelete: retain

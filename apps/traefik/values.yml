@@ -1,0 +1,168 @@
+image:
+  registry: docker.io
+  repository: traefik
+  tag: v3.0
+
+metrics:
+  prometheus: null
+  
+persistence:
+  enabled: true
+  path: /data
+  storageClass: "nfs-client"
+
+securityContext:
+  readOnlyRootFilesystem: false
+  
+service:
+  type: ClusterIP
+  externalIPs:
+    - 192.168.4.10
+  
+ports:
+  web:
+    redirectTo:
+      port: websecure
+  websecure:
+    asDefault: true
+    tls:
+      certResolver: cloudflare
+      domains:
+        - main: s3rv.dev
+          sans:
+            - "*.s3rv.dev"
+  traefik: null
+  metrics: null
+   
+deployment:
+  healthchecksPort: 8000
+  revisionHistoryLimit: 1
+  
+globalArguments:
+  - "--global.sendanonymoususage=false"
+
+additionalArguments:
+  - "--serversTransport.insecureSkipVerify=true"
+  - "--ping.entrypoint=web"
+  
+env:
+  - name: TZ
+    value: Europe/Berlin
+
+envFrom:
+ - secretRef:
+     name: cf-creds
+
+logs:
+  general:
+    level: INFO
+    
+ingressRoute:
+  dashboard:
+    entryPoints: ["websecure"]
+    matchRule: Host(`traefik.s3rv.dev`)
+
+certResolvers:
+  cloudflare:
+    dnsChallenge:
+      provider: cloudflare
+      delayBeforeCheck: 60
+      resolvers:
+        - 1.1.1.1
+        - 8.8.8.8
+    storage: /data/acme.json
+
+providers:
+  kubernetesIngress:
+    ingressClass: traefik-internal
+    publishedService:
+      enabled: true
+  file:
+    enabled: true
+    watch: true
+    content: |-
+      http:
+        routers:
+          proxmox-alpha:
+            service: proxmox-alpha
+            rule: Host(`proxmox-alpha.s3rv.dev`)
+          proxmox-beta:
+            service: proxmox-beta
+            rule: Host(`proxmox-beta.s3rv.dev`)
+          haos:
+            service: haos
+            rule: Host(`haos.s3rv.dev`)
+          synology:
+            service: nasa2
+            rule: Host(`nasa2.s3rv.dev`)
+          adguard:
+            service: adguard
+            rule: Host(`adguard.s3rv.dev`)
+          gitea:
+            service: gitea
+            rule: Host(`github.com`)
+          portainer:
+            service: portainer
+            rule: Host(`portainer.s3rv.dev`)
+        services:
+          proxmox-alpha:
+            loadBalancer:
+              servers:
+              - url: https://192.168.4.55:8006/
+          proxmox-beta:
+            loadBalancer:
+              servers:
+              - url: https://192.168.4.44:8006/
+          nasa2:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.33:5000/
+          haos:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.22:8123/
+          adguard:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.33:8080/
+          gitea:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.33:8115/
+          portainer:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.33:9000/
+
+extraObjects: 
+  - apiVersion: traefik.io/v1alpha1
+    kind: IngressRoute
+    metadata:
+      name: argocd
+      namespace: argocd
+      annotations:
+        helm.sh/hook: post-install
+    spec:
+      routes:
+        - match: Host(`argocd.s3rv.dev`)
+          kind: Rule
+          services:
+            - name: argocd-server
+              port: 443
+  - apiVersion: bitnami.com/v1alpha1
+    kind: SealedSecret
+    metadata:
+      creationTimestamp: null
+      name: cf-creds
+      namespace: traefik
+    spec:
+      encryptedData:
+        CF_API_EMAIL: AgCM79ndodRiZ2IKa0k29saAC0XEZR0kultj7Lv7x8R38ymC9rDMpMk4TRaaWn8pAWnRPF46sUuaoyq2pATBD9i0oEZ9r+0AGfgTf5Kqh7VKHbP0vqZ9ewd/lSOWlBY3nSEkec5h9UH6/xWky3fF3FOnkpSBrCUor+9RYeMjDCGlbJifHpHGyW2uH5Ev34ca9t+nSwdFaXiHD/Q+Ahs9lOc39v1UCIRK8mTwIe64e9JUEfT3/VXdzgMAALYhx5ZbFEKX2oBRRTls5UCYGSuXVR3SE/73w6OAqZ7OLzRkx+OU32X4fjnPyDiVPf3yYz+XsCM10pLxx4rJqtZR1qoEHBk6dkyiS/wG/K/SvZZIc+vabaMYv7DyC98hgBsLA5gVDY9mq4YFMiwRu7AQs5eH8EtEyqw+TGm4L2aYhakGW4ocT5EvrYRxUdaCmOiOnGG0kt3X3sDSsWqbqkPnR2SyfdgAvwIoSe6PdjkeQxg5sOTdA9PAUTICuUxyVRQS/c8xAho4abnJ7cMuADkBnzCMXSePfeqjb2/OPl+1iw/AcnYa/dOaRjwRQ4UXKbFzjggvzIXeaULvrXliJDW58xUV2L6pcCop9JM+10vBeu5LF1AxBTBW4yAb/oMtJd3O8lST5TVEbUDl7ln49VIyGSwypWpJgdeqAvFcesUGspsjM8BNK3cyyGWzMMOBfjhLiTdkMkGEWGoCDY/p4lUYv51fc347ew7P/Q==
+        CF_DNS_API_TOKEN: AgBV7UulSS4vtDZEg9XnN/em/BriJ1F3v0DsbJ2YjgInZ2iCFdP14N++EwO2OC60g4oVExzm37KKsZirkAfY7MD4/6m3tuHH4tQ7JGhbcIwf/DWEI93jjhG15CtS4GhBhm0PxlbJzwzzMFs1jjVDcrraY7QRgTatZZ+BGwbzYtC1N5Vh1g5WPYmnQrPxtrEiC9ataPnFpZsxaQXApfLyvwttkBa2qUqj+IvVjvxpiWbEA7UQTNYriFp3XmC9a9iRiJbg+7jZBs8XGC60ioWgyVafYYC9cY3y9QsFLTrgZSJ28a16RZXIShPlszBFdlNH/EktQJmbNpWYLzbFZ1w5k6Q1fqfTJF6w8+VP4iWUcDG40LIVZ8ot7WpYRtL8+sTARUoX5XMZYmX57XSmhg1C/nSDNZMxbtCfSEOuQEa6n/8CTZ8jFn5aBh/hY0ohnrxKCPEltSey7e2oUBQEY26Y4bAaEqbhI7nj3OYWRZv/Yah+eIuqg26MovDFhXz1wXt+97OXGnVKE7CsdL96TCPzztIhsG++MWcNf31q0uxB0KUXlfghxZO06uriIt4+eGuLP3bgIAdCgPbXU74p74IYneUUkeTr7Uoz+xHZOCMFPHe2F4Inq7BInzR+mmunoZNCzcyftSprQE55S6GU4M6Rpk07nQHbbMHuy5t1510p5o0R8rhLiDh9Ff/CkTYLk+0vM04xdufXrgy5WlEnY/V7ydq4fRZPAYj5Sf9Qg7/4lvFv/x0uXpJEQycv
+        TRAEFIK_CERTIFICATERESOLVERS_CLOUDFLARE_ACME_EMAIL: AgB1hfovu+oVrtvXcm0wgAcgOxx3wiNvb8PQi+TeH1CCEPoRiNGUWfD2WUMBDv64rRwd5zkUxr9rN0PS2H/igaNbbsGSR/8MTyme/zh2W0gvmduRZQghWH8+lY6jgB83Fyekso1wC85hGJOoQBHTzsTDvc9fLOpM65F53JoYuY207oMZJUnzBBEBEOHMlK8igA2oyQV7i2iv3/5b4FNbYuMXC2Cf6mgBWGdJ4zDqrlRUkiinXiE0kIfdo4E2qqaTglyUsmEQOhDjJa+vnlGQ7v9lttuB1sv0dduC72JL9JABWvkcqqXDHrWo0DPCqYpKG4zroHbu+iSCCPdS2ob1F2Yod4gzGFYCu1SWf2y4o9Z2tlNrcd03SqFgd2VDStTc9K9wv5MIZRhu4cVOt/N+VJdALZB++Ln1MtXg83jdPZjUpGythb+Mi7kOt1N69+YZpeTXFdpztPwxzXfdz1YrfdU+Nl7a/ORjIFfALu69f/rn9a72c2H0CNLbxKpCzp/509eRsRfxJk50lRf/E0ptaNOMqCzC1U1iiNNwJlZxPqwPtiFec0MFuBVKUIO4sYoGfQdgsWjwFgNviZVmtt5XcxmiqOShna4FTfst4km3g1zudAMARaqDyB6ZOIC6IQ76XfHlPrIufUkIS8ojgMOeysBlFxGYDPu1cXac5D8t0hR1spNfkkq6rs28I5nCOhqh611XErf0Fvk6dUffV6HA1Tn5us1Ucw==
+      template:
+        metadata:
+          creationTimestamp: null
+          name: cf-creds
+          namespace: traefik
+        type: Opaque

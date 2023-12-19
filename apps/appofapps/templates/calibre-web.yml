@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: calibre-web
+  namespace: argocd
+spec:
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    namespace: calibre-web
+    server: 'https://kubernetes.default.svc'
+  sources:
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      path: apps/calibre-web
+      targetRevision: HEAD
+  project: default

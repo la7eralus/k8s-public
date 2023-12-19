@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "argocd": {
+    "fileMatch": ["apps/appofapps/templates/.+\\.ya?ml$"]
+  },
+  "kubernetes": {
+    "fileMatch": ["apps/.+-k8s\\.ya?ml$"]
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "ignoreTests": true,
+      "automergeStrategy": "squash"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ]
+}

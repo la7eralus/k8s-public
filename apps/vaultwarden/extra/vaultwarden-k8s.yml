@@ -1,0 +1,11 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vaultwarden
+spec:
+  routes:
+    - match: Host(`vaultwarden.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: vaultwarden
+          port: 8080

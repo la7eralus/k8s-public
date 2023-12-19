@@ -1,0 +1,94 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: calibre-web
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: calibre-web
+      app.kubernetes.io/name: calibre-web
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: calibre-web
+        app.kubernetes.io/name: calibre-web
+    spec:
+      containers:
+        - image: linuxserver/calibre-web:0.6.21
+          name: calibre-web
+          ports:
+            - containerPort: 8083
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /books
+              name: books
+            - mountPath: /config
+              name: config
+      restartPolicy: Always
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: config
+        - name: books
+          persistentVolumeClaim:
+            claimName: books
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: calibre-web
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8083
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: calibre-web
+    app.kubernetes.io/name: calibre-web
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: calibre-web
+spec:
+  routes:
+    - match: Host(`calibre.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: calibre-web
+          port: 80
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+  storageClassName: nfs-client
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: books
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs-client
