@@ -1,0 +1,118 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: adguard-home
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: adguard-home
+      app.kubernetes.io/name: adguard-home
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: adguard-home
+        app.kubernetes.io/name: adguard-home
+    spec:
+      containers:
+        - image: adguard/adguardhome:v0.107.43
+          name: adguard-home
+          command: ["/bin/sh"]
+          args: ["/opt/adguardhome/data/startup/startagh.sh"]
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 53
+              name: dnstcp
+              protocol: TCP
+            - containerPort: 53
+              name: dnsudp
+              protocol: UDP              
+          volumeMounts:
+            - mountPath: /opt/adguardhome/data
+              name: data
+      restartPolicy: Always
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: adguard-home
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: dnsudp
+      port: 53
+      targetPort: 53
+      protocol: UDP
+    - name: dnstcp
+      port: 53
+      targetPort: 53
+      protocol: TCP
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: adguard-home
+    app.kubernetes.io/name: adguard-home
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: adguard-home
+spec:
+  entryPoints:
+    - dnstcp
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: adguard-home
+          port: 53
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: adguard-home
+spec:
+  entryPoints:
+    - dnsudp
+  routes:
+    - services:
+      - name: adguard-home
+        port: 53
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: adguard-home
+spec:
+  routes:
+    - match: Host(`adguard.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: adguard-home
+          port: 8080
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs-client

@@ -18,8 +18,18 @@ service:
   type: ClusterIP
   externalIPs:
     - 192.168.4.10
-  
+
 ports:
+  dnstcp:
+    port: 5300
+    expose: true
+    exposedPort: 53
+    protocol: TCP
+  dnsudp:
+    port: 5300
+    expose: true
+    exposedPort: 53
+    protocol: UDP
   web:
     redirectTo:
       port: websecure
@@ -95,15 +105,9 @@ providers:
           synology:
             service: nasa2
             rule: Host(`nasa2.s3rv.dev`)
-          adguard:
-            service: adguard
-            rule: Host(`adguard.s3rv.dev`)
-          gitea:
-            service: gitea
-            rule: Host(`github.com`)
-          portainer:
-            service: portainer
-            rule: Host(`portainer.s3rv.dev`)
+          scrypted:
+            service: scrypted
+            rule: Host(`scrypted.s3rv.dev`)
         services:
           proxmox-alpha:
             loadBalancer:
@@ -121,18 +125,10 @@ providers:
             loadBalancer:
               servers:
               - url: http://192.168.4.22:8123/
-          adguard:
+          scrypted:
             loadBalancer:
               servers:
-              - url: http://192.168.4.33:8080/
-          gitea:
-            loadBalancer:
-              servers:
-              - url: http://192.168.4.33:8115/
-          portainer:
-            loadBalancer:
-              servers:
-              - url: http://192.168.4.33:9000/
+              - url: https://192.168.4.104:10443/
 
 extraObjects: 
   - apiVersion: traefik.io/v1alpha1

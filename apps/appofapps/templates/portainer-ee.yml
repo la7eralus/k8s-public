@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: portainer-ee
+  namespace: argocd
+spec:
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    namespace: portainer-ee
+    server: 'https://kubernetes.default.svc'
+  sources:
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      path: apps/portainer-ee
+      targetRevision: HEAD
+  project: default

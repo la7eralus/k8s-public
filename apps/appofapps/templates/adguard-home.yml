@@ -1,9 +1,8 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: renovate
+  name: adguard-home
   namespace: argocd
-  annotations:
 spec:
   syncPolicy:
     automated:
@@ -12,19 +11,19 @@ spec:
     syncOptions:
       - CreateNamespace=true
   destination:
-    namespace: renovate
+    namespace: adguard-home
     server: 'https://kubernetes.default.svc'
   sources:
-    - repoURL: 'https://docs.renovatebot.com/helm-charts'
-      chart: renovate
-      targetRevision: 37.107.0
+    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      path: apps/adguard-home
+      targetRevision: HEAD
+    - repoURL: 'https://pixelfederation.github.io/unbound'
+      chart: unbound
+      targetRevision: 0.1.3
       helm:
         valueFiles:
-          - $values/apps/renovate/values.yml
+          - $values/apps/unbound/values.yml
     - repoURL: 'https://github.com/5olu7ion/k8s.git'
       targetRevision: HEAD
       ref: values
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
-      path: apps/renovate/extra
-      targetRevision: HEAD
   project: default

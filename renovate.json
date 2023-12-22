@@ -1,6 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
+  "assignees": ["5olu7ion"],
+  "reviewers": ["5olu7ion"],
   "argocd": {
     "fileMatch": ["apps/appofapps/templates/.+\\.ya?ml$"]
   },
@@ -17,6 +19,10 @@
     {
       "matchUpdateTypes": ["major"],
       "dependencyDashboardApproval": true
+    },
+    {
+      "matchPackageNames": ["linuxserver/calibre-web"],
+      "versioning": "regex:^0\\.(?<major>\\d?)\\.(?<minor>\\d+)$"
     }
   ]
 }

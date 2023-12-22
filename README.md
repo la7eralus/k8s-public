@@ -1,5 +1,5 @@
 #### Talosctl Config
-`export TALOSCONFIG=~/Downloads/gitea/k8s/talos/talosconfig`
+`export TALOSCONFIG=~/Downloads/github/k8s/talos/talosconfig`
 
 #### Wipe/Reset Talos VM 
 `talosctl reset --graceful=false --reboot`
@@ -11,11 +11,14 @@
 #### Bootstrap (after autoreboot) 
 `talosctl bootstrap`
 
+#### Bootstrap ArgoCD
+`helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd`
+
 #### Import Sealed Secrets Key
 `kubectl create -f talos/sealed-secrets.yml`
 
-#### Bootstrap ArgoCD
-`helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd --values=apps/argocd/values.yml`
+#### Bootstrap Sealed Secrets
+`helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-namespace --namespace sealed-secrets`
 
 #### AppofApps 
 `kubectl -n argocd create -f apps/appofapps/appofapps.yml -f apps/argocd/extra/argocd-k8s.yml`
@@ -71,7 +74,7 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o yaml | grep pass | c
 `kubectl create secret generic cf-creds -n traefik --from-literal=CF_API_EMAIL='user@example.com' -o yaml | kubeseal --controller-name sealed-secrets --controller-namespace sealed-secrets -o yaml > cf-creds.yml`
 
 #### Encrypt with sops (public age Key)
-`sops --encrypt --encrypted-regex '^(tls.crt|tls.key|crt|key|secret|secretboxEncryptionSecret|token|id|ca|data)$' --age age1x... talos/controlplane.yml > talos/controlplane.enc.yml`
+`sops --encrypt --encrypted-regex '^(content|tls.crt|tls.key|crt|key|secret|secretboxEncryptionSecret|token|id|ca|data)$' --age age1x... talos/controlplane.yml > talos/controlplane.enc.yml`
 
 #### Decrypt with sops (age key in ~/.config/sops/age/keys.txt)
 `sops --decrypt talos/controlplane.enc.yml > talos/controlplane.yml`
@@ -85,4 +88,9 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o yaml | grep pass | c
 #### Upgrade k8s
 `talosctl --nodes 192.168.4.10 upgrade-k8s --to 1.29.0`
 
-## Todo: add adguard and unbound to talos, change talos nameserver to 1.1.1.1, delete docker vm, argocd-notifications, backstage
+## Todo: 
+- fix renovate PR assignee/reviewer
+- install kube-prometheus stack
+- activate metrics an accesslogs in traefik?
+- argocd-notifications
+- backstage

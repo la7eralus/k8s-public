@@ -1,0 +1,152 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: portainer-ee
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: portainer-ee
+      app.kubernetes.io/name: portainer-ee
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: portainer-ee
+        app.kubernetes.io/name: portainer-ee
+    spec:
+      containers:
+        - image: portainer/portainer-ee:2.19.4
+          name: portainer-ee
+          ports:
+            - containerPort: 9000
+              name: http
+              protocol: TCP
+            - containerPort: 8000
+              name: ssh
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: data
+      restartPolicy: Always
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: portainer-ee
+spec:
+  ports:
+    - name: http
+      port: 9000
+      targetPort: 9000
+    - name: ssh
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: portainer-ee
+    app.kubernetes.io/name: portainer-ee
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portainer-ee
+spec:
+  routes:
+    - match: Host(`portainer.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: portainer-ee
+          port: 9000
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+  storageClassName: nfs-client
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: portainer-sa-clusteradmin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: portainer-crb-clusteradmin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: portainer-sa-clusteradmin
+  namespace: portainer-ee
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portainer-agent
+spec:
+  type: ClusterIP
+  selector:
+    app: portainer-agent
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9001
+      targetPort: 9001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portainer-agent-headless
+spec:
+  clusterIP: None
+  selector:
+    app: portainer-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portainer-agent
+spec:
+  selector:
+    matchLabels:
+      app: portainer-agent
+  template:
+    metadata:
+      labels:
+        app: portainer-agent
+    spec:
+      serviceAccountName: portainer-sa-clusteradmin
+      containers:
+      - name: portainer-agent
+        image: portainer/agent:2.19.4
+        imagePullPolicy: Always
+        env:
+        - name: AGENT_CLUSTER_ADDR
+          value: "portainer-agent-headless"
+        - name: KUBERNETES_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        ports:
+        - containerPort: 9001
+          protocol: TCP

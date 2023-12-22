@@ -1,7 +1,7 @@
 image:
   registry: ghcr.io
   repository: renovatebot/renovate
-  tag: 37.102.1
+  tag: 37.107.0
   
 cronjob:
   schedule: '*/30 * * * *'
@@ -20,7 +20,6 @@ renovate:
   config: |
     {
       "platform": "github",
-      "endpoint": "https://api.github.com/api/v3",
       "gitAuthor": "Renovate Bot <renovate-bot@github.com>",
       "autodiscover": false,
       "printConfig": true,

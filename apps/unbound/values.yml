@@ -1,0 +1,35 @@
+containers:
+  unbound:
+    image:
+      repository: ghcr.io/pixelfederation/unbound
+      tag: 1.17.1_3
+      pullPolicy: IfNotPresent
+    config:
+      verbosity: 0
+      logReplies: "no"
+      logQueries: "no"
+      logTagQueryreply: "no"
+      logLocalActions: "no"
+      logServfail: "no"
+      allowedIpRanges:
+      - "10.96.0.0/12"
+      - "10.244.0.0/16"
+
+      # You can set as many forward zones as needed by specifying the zone name
+      # and forward hosts. Forward hosts can be set by hostname or ip.
+
+      # forwardZones:
+      # - name: "fake.net"
+      #   forwardHosts:
+      #   - "fake1.host.net"
+      #   forwardIps:
+      #   - "10.10.10.10"
+
+      # Unbound can store DNS records in a "local zone." This facility can be used to
+      # assign context-specific names to a given IP address, and could also be used for
+      # private DNS if you don't want or have an external resolver.
+
+      # localRecords:
+      # - name: "fake3.host.net"
+      #   ip: "10.12.10.10"
+replicaCount: 1
