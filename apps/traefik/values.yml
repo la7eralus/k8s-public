@@ -15,21 +15,11 @@ securityContext:
   readOnlyRootFilesystem: false
   
 service:
-  type: ClusterIP
-  externalIPs:
-    - 192.168.4.10
+  spec:
+    externalTrafficPolicy: Local
+    loadBalancerIP: "192.168.4.11"
 
 ports:
-  dnstcp:
-    port: 5300
-    expose: true
-    exposedPort: 53
-    protocol: TCP
-  dnsudp:
-    port: 5300
-    expose: true
-    exposedPort: 53
-    protocol: UDP
   web:
     redirectTo:
       port: websecure
@@ -108,6 +98,18 @@ providers:
           scrypted:
             service: scrypted
             rule: Host(`scrypted.s3rv.dev`)
+          uptime-kuma:
+            service: uptime-kuma
+            rule: Host(`uptime.s3rv.dev`)
+          syncthing-nasa2:
+            service: syncthing-nasa2
+            rule: Host(`syncthing-nasa2.s3rv.dev`)
+          unicorn-pi:
+            service: unicorn-pi
+            rule: Host(`unicorn-pi.s3rv.dev`)
+          adguard-home:
+            service: adguard-home
+            rule: Host(`adguard.s3rv.dev`)
         services:
           proxmox-alpha:
             loadBalancer:
@@ -129,6 +131,22 @@ providers:
             loadBalancer:
               servers:
               - url: https://192.168.4.104:10443/
+          uptime-kuma:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.33:3100/
+          syncthing-nasa2:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.33:8384/
+          unicorn-pi:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.80:80/
+          adguard-home:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.10:8080/
 
 extraObjects: 
   - apiVersion: traefik.io/v1alpha1

@@ -1,8 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "assignees": ["5olu7ion"],
-  "reviewers": ["5olu7ion"],
+  "extends": [
+    "config:recommended"
+  ],
   "argocd": {
     "fileMatch": ["apps/appofapps/templates/.+\\.ya?ml$"]
   },

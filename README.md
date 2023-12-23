@@ -42,6 +42,13 @@ helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
 helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-namespace --namespace sealed-secrets --values=apps/sealed-secrets/values.yml
 ```
 
+#### MetalLB
+```
+helm repo add metallb https://metallb.github.io/metallb
+helm upgrade --install metallb metallb/metallb --create-namespace --namespace metallb --values=apps/metallb/values.yml
+kubectl -n metallb create -f apps/metallb/extra/metallb-k8s.yml
+```
+
 #### Traefik
 ```
 helm repo add traefik https://traefik.github.io/charts
@@ -59,8 +66,8 @@ kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"
 ```
 helm repo add argo https://argoproj.github.io/argo-helm
 helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd --values=apps/argocd/values.yml
-kubectl -n argocd create -f apps/appofapps/appofapps.yml
 kubectl -n argocd get secret argocd-initial-admin-secret -o yaml | grep pass | cut -d ":" -f 2 | sed -e "s/ //" | base64 -d
+kubectl -n argocd create -f apps/appofapps/appofapps.yml
 ```
 
 ### Useful Commands 
@@ -89,8 +96,5 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o yaml | grep pass | c
 `talosctl --nodes 192.168.4.10 upgrade-k8s --to 1.29.0`
 
 ## Todo: 
-- fix renovate PR assignee/reviewer
-- install kube-prometheus stack
-- activate metrics an accesslogs in traefik?
 - argocd-notifications
-- backstage
+- Maybe: https://xphyr.net/post/ocp_syno_csi/#defining-the-synology-storage-class
