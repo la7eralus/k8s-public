@@ -95,6 +95,5 @@ kubectl -n argocd create -f apps/appofapps/appofapps.yml
 #### Upgrade k8s
 `talosctl --nodes 192.168.4.10 upgrade-k8s --to 1.29.0`
 
-## Todo: 
-- argocd-notifications
+### Todo: 
 - Maybe: https://xphyr.net/post/ocp_syno_csi/#defining-the-synology-storage-class

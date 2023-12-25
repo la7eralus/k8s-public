@@ -23,3 +23,19 @@ spec:
       name: repo-2156782834
       namespace: argocd
     type: Opaque
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: argocd-notifications-secret
+  namespace: argocd
+spec:
+  encryptedData:
+    telegram-token: AgAFy4tcOrv8k2jf65e3n+itsdhiDGTAc36tTkQbhyHeSAwqLifpo3R88jWkR5Ipr3Onhtqnh07j0pGBV3zboq/wjj2MqV/nukD1jz4YTEiGeCzPHV3KCg0UjBXvVXUEGBW4EWvy3IKsreOL8K1gCxy7otBcFH5RKPY6JCFUC62W2gXx97p0kH0guQ16GOx2aQOZp3OPNQshktGlH1H02E2hO0UkaLKS4IcmRdbQeywzTJWoP+axuf0My2fAQJMK9YVICfLElOJ9rAbbrAqFIHjMUToadIoTPtAJADr7U0jUAKOvHZ2wwKLKUbjp3u1lyVPtsa5numwsKzbpBpZv9mhRFtrZrKmbWk/QuX4c6e51XfOzY38jN36awbmeIBx2tam64M8pZ+CbraLDeq5Dg3tkCsHgflUHKJAyp9dmKzPVpA4bdsbVZNmWNwkTUaS9F76/aQ7SYwfII5sNAB5p+Es8oCUb5cHm2MmyTyEAPofb8rOoVvabQlMbuFMfjfawetyevLv7CXV8yl/qLg458tNZV38AXtM11gzRdrc1H82LZ4IDn3s/d7lh3NjdCTkVXEv1r3Uy/g/QufO66y67bu2aXC5Pdx5eNd6lzdMp5f+khjoTcbERpYjzxkxHcvRK5aX0ORhsiLqCvVpTUPmmvJlKEXkzkMMlz1u0A6mlehUhGd7mc32wbgnWJZI2vB7bMfL7O276hakgTXpvYXSg4q89qMjbTWb1X+gq1TUsMSWZIssCLsmprHrWrtJ3hEOT
+  template:
+    metadata:
+      creationTimestamp: null
+      name: argocd-notifications-secret
+      namespace: argocd
+    type: Opaque
