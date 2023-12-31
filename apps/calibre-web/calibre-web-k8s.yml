@@ -22,6 +22,13 @@ spec:
       containers:
         - image: linuxserver/calibre-web:0.6.21
           name: calibre-web
+          env:
+            - name: PUID
+              value: "1026"
+            - name: PGID
+              value: "100"
+            - name: TZ
+              value: "Europe/Berlin"
           ports:
             - containerPort: 8083
               name: http

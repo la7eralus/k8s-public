@@ -17,7 +17,7 @@ spec:
   sources:
     - repoURL: 'https://charts.gabe565.com'
       chart: paperless-ngx
-      targetRevision: 0.9.2
+      targetRevision: 0.10.0
       helm:
         valueFiles:
           - $values/apps/paperless-ngx/values.yml

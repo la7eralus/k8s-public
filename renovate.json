@@ -3,6 +3,9 @@
   "extends": [
     "config:recommended"
   ],
+  "ignorePaths": [ 
+    "**/attic/**"
+  ],
   "argocd": {
     "fileMatch": ["apps/appofapps/templates/.+\\.ya?ml$"]
   },
