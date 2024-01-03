@@ -8,17 +8,23 @@
 #### Install VM
 `talosctl apply-config --insecure --nodes 192.168.4.10 --file talos/controlplane.yml`
 
-#### Bootstrap (after autoreboot) 
+#### Bootstrap (after autoreboot)
 `talosctl bootstrap`
 
 #### Bootstrap ArgoCD
-`helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd`
+```
+helm repo add argo https://argoproj.github.io/argo-helm
+helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd --set=notifications.secret.create=false
+```
 
 #### Import Sealed Secrets Key
 `kubectl create -f talos/sealed-secrets.yml`
 
 #### Bootstrap Sealed Secrets
-`helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-namespace --namespace sealed-secrets`
+```
+helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-namespace --namespace sealed-secrets
+```
 
 #### AppofApps 
 `kubectl -n argocd create -f apps/appofapps/appofapps.yml -f apps/argocd/extra/argocd-k8s.yml`
