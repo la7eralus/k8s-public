@@ -26,6 +26,10 @@
     {
       "matchPackageNames": ["linuxserver/calibre-web"],
       "versioning": "regex:^0\\.(?<major>\\d?)\\.(?<minor>\\d+)$"
+    },
+    {
+      "matchPackagePatterns": ["renovate"],
+      "automergeType": "branch"
     }
   ]
 }

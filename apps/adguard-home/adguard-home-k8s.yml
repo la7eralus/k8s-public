@@ -37,6 +37,20 @@ spec:
           volumeMounts:
             - mountPath: /opt/adguardhome/data
               name: data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 1
       restartPolicy: Always
       volumes:
         - name: data

@@ -1,7 +1,7 @@
 image:
   registry: ghcr.io
   repository: renovatebot/renovate
-  tag: 37.117.0
+  tag: 37.126.1
   
 cronjob:
   schedule: '*/30 * * * *'

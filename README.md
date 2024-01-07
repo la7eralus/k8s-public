@@ -103,3 +103,4 @@ kubectl -n argocd create -f apps/appofapps/appofapps.yml
 
 ### Todo: 
 - Maybe: https://xphyr.net/post/ocp_syno_csi/#defining-the-synology-storage-class
+- Maybe: Loki, Prometheus, Promtail, Node Exporter, Grafana

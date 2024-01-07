@@ -3,7 +3,8 @@ kind: Application
 metadata:
   name: vaultwarden
   namespace: argocd
-  annotations:
+  labels:
+    notification: "true"
 spec:
   syncPolicy:
     automated:

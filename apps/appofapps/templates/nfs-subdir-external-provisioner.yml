@@ -5,6 +5,8 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-4"
+  labels:
+    notification: "true"
 spec:
   syncPolicy:
     automated:

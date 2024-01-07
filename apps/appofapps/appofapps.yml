@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: appofapps
   namespace: argocd
+  labels:
+    notification: "false"
 spec:
   syncPolicy:
     automated:

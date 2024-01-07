@@ -17,6 +17,8 @@ notifications:
       triggers:
         - on-deployed
         - on-health-degraded
+      selector: notification=true
+
   templates:
     template.app-deployed: |
       email:

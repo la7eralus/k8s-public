@@ -41,6 +41,16 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: redis
+          readinessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 60
+            periodSeconds: 60
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 60
+            periodSeconds: 60
       restartPolicy: Always
       volumes:
         - name: redis

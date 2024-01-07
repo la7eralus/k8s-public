@@ -5,6 +5,8 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-2"
+  labels:
+    notification: "true"
 spec:
   ignoreDifferences:
   - group: "apiextensions.k8s.io"
