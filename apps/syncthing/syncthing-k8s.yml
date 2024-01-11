@@ -3,86 +3,105 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   creationTimestamp: null
-  name: calibre-web
+  name: syncthing
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/instance: calibre-web
-      app.kubernetes.io/name: calibre-web
+      app.kubernetes.io/instance: syncthing
+      app.kubernetes.io/name: syncthing
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app.kubernetes.io/instance: calibre-web
-        app.kubernetes.io/name: calibre-web
+        app.kubernetes.io/instance: syncthing
+        app.kubernetes.io/name: syncthing
     spec:
       containers:
-        - image: linuxserver/calibre-web:0.6.21
-          name: calibre-web
+        - image: docker.io/syncthing/syncthing:1.27.2
+          name: syncthing
           env:
             - name: TZ
               value: "Europe/Berlin"
           ports:
-            - containerPort: 8083
+            - containerPort: 8384
               name: http
               protocol: TCP
+            - containerPort: 22000
+              name: listeners
+              protocol: TCP
           volumeMounts:
-            - mountPath: /books
-              name: books
-            - mountPath: /config
+            - mountPath: /var/syncthing
               name: config
+            - mountPath: /host
+              name: host
           readinessProbe:
             httpGet:
               path: /
               port: http
             initialDelaySeconds: 60
             periodSeconds: 60
-            timeoutSeconds: 2
+            timeoutSeconds: 1
           livenessProbe:
             httpGet:
               path: /
               port: http
             initialDelaySeconds: 60
             periodSeconds: 60
-            timeoutSeconds: 2
+            timeoutSeconds: 1
       restartPolicy: Always
       volumes:
         - name: config
           persistentVolumeClaim:
             claimName: config
-        - name: books
+        - name: host
           persistentVolumeClaim:
-            claimName: books
+            claimName: host
 ---
 apiVersion: v1
 kind: Service
 metadata:
   creationTimestamp: null
-  name: calibre-web
+  name: syncthing
 spec:
   ports:
     - name: http
-      port: 80
-      targetPort: 8083
+      port: 8384
+      targetPort: 8384
+    - name: listeners
+      port: 22000
+      targetPort: 22000
   type: ClusterIP
   selector:
-    app.kubernetes.io/instance: calibre-web
-    app.kubernetes.io/name: calibre-web
+    app.kubernetes.io/instance: syncthing
+    app.kubernetes.io/name: syncthing
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: calibre-web
+  name: syncthing
 spec:
   routes:
-    - match: Host(`calibre.s3rv.dev`)
+    - match: Host(`syncthing-k8s.s3rv.dev`)
       kind: Rule
       services:
-        - name: calibre-web
-          port: 80
+        - name: syncthing
+          port: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: syncthing-listeners
+spec:
+  entryPoints:
+    - stl
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: syncthing
+          port: listeners
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -94,20 +113,20 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Mi
+      storage: 100Mi
   storageClassName: local-static
-  volumeName: calibre-web-config
+  volumeName: syncthing-config
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   creationTimestamp: null
-  name: books
+  name: host
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 5Gi
   storageClassName: local-static
-  volumeName: calibre-web-books
+  volumeName: syncthing-host

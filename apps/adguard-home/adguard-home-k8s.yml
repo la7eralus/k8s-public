@@ -94,4 +94,5 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: nfs-client
+  storageClassName: local-static
+  volumeName: adguard-home-data

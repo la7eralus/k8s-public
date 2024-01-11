@@ -19,6 +19,4 @@ service:
 persistence:
   data:
     enabled: true
-    storageClass: "nfs-client"
-    accessMode: ReadWriteOnce
-    size: 1Gi
+    existingClaim: "data"

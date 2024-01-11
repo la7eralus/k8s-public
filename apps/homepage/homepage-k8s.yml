@@ -79,7 +79,7 @@ spec:
       kind: Rule
       services:
         - name: homepage
-          port: 80
+          port: http
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -92,7 +92,8 @@ spec:
   resources:
     requests:
       storage: 10Mi
-  storageClassName: nfs-client
+  storageClassName: local-static
+  volumeName: homepage-config
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -105,4 +106,5 @@ spec:
   resources:
     requests:
       storage: 10Mi
-  storageClassName: nfs-client
+  storageClassName: local-static
+  volumeName: homepage-icons

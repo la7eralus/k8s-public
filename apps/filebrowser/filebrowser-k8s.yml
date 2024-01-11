@@ -1,0 +1,116 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Mi
+  storageClassName: local-static
+  volumeName: filebrowser-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: host
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storage:
+  storageClassName: local-static
+  volumeName: filebrowser-host
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: filebrowser
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: filebrowser
+      app.kubernetes.io/name: filebrowser
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: filebrowser
+        app.kubernetes.io/name: filebrowser
+    spec:
+      containers:
+        - image: filebrowser/filebrowser:v2.27.0
+          name: filebrowser
+          env:
+            - name: FB_DATABASE
+              value: /data/database.db
+            - name: TZ
+              value: "Europe/Berlin"
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /srv
+              name: host
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 1
+      restartPolicy: Always
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
+        - name: host
+          persistentVolumeClaim:
+            claimName: host
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: filebrowser
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: filebrowser
+    app.kubernetes.io/name: filebrowser
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: filebrowser
+spec:
+  routes:
+    - match: Host(`filebrowser.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: filebrowser
+          port: 80

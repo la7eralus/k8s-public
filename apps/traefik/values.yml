@@ -9,7 +9,7 @@ metrics:
 persistence:
   enabled: true
   path: /data
-  storageClass: "nfs-client"
+  existingClaim: "data"
 
 securityContext:
   readOnlyRootFilesystem: false
@@ -20,6 +20,11 @@ service:
     loadBalancerIP: "192.168.4.11"
 
 ports:
+  stl:
+    port: 22000
+    expose: true
+    exposedPort: 22000
+    protocol: TCP
   web:
     redirectTo:
       port: websecure
@@ -33,7 +38,7 @@ ports:
             - "*.s3rv.dev"
   traefik: null
   metrics: null
-   
+
 deployment:
   healthchecksPort: 8000
   revisionHistoryLimit: 1
@@ -180,3 +185,16 @@ extraObjects:
           name: cf-creds
           namespace: traefik
         type: Opaque
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      creationTimestamp: null
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 128Mi
+      storageClassName: local-static
+      volumeName: traefik-data

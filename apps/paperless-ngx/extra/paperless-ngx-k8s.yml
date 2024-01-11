@@ -32,7 +32,7 @@ spec:
         app.kubernetes.io/name: redis
     spec:
       containers:
-        - image: docker.io/library/redis:7.2.3
+        - image: docker.io/library/redis:7.2.4
           name: redis
           ports:
             - containerPort: 6379
@@ -83,4 +83,61 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: nfs-client
+  storageClassName: local-static
+  volumeName: paperless-ngx-redis-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-static
+  volumeName: paperless-ngx-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-static
+  volumeName: paperless-ngx-media
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: export
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-static
+  volumeName: paperless-ngx-export
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  name: consume
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-static
+  volumeName: paperless-ngx-consume

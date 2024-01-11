@@ -4,7 +4,7 @@ metadata:
   name: renovate
   namespace: argocd
   labels:
-    notification: "true"
+    notification: "false"
 spec:
   syncPolicy:
     automated:
@@ -18,7 +18,7 @@ spec:
   sources:
     - repoURL: 'https://docs.renovatebot.com/helm-charts'
       chart: renovate
-      targetRevision: 37.126.1
+      targetRevision: 37.128.2
       helm:
         valueFiles:
           - $values/apps/renovate/values.yml

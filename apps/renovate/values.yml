@@ -1,7 +1,7 @@
 image:
   registry: ghcr.io
   repository: renovatebot/renovate
-  tag: 37.126.1
+  tag: 37.128.2
   
 cronjob:
   schedule: '*/30 * * * *'
@@ -29,4 +29,5 @@ renovate:
   persistence:
     cache:
       enabled: true
-      storageClass: "nfs-client"
+      storageClass: "local-static"
+      storageSize: "555Mi"

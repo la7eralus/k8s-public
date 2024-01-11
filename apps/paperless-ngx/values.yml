@@ -7,7 +7,7 @@
 image:
   repository: ghcr.io/paperless-ngx/paperless-ngx
   pullPolicy: IfNotPresent
-  tag: 2.3.1
+  tag: 2.3.3
 
 env:
   TZ: Europe/Berlin
@@ -30,27 +30,19 @@ persistence:
   data:
     enabled: true
     mountPath: /usr/src/paperless/data
-    storageClass: "nfs-client"
-    accessMode: ReadWriteOnce
-    size: 1Gi
+    existingClaim: "data"
   media:
     enabled: true
     mountPath: /usr/src/paperless/media
-    storageClass: "nfs-client"
-    accessMode: ReadWriteOnce
-    size: 10Gi
+    existingClaim: "media"
   export:
     enabled: true
     mountPath: /usr/src/paperless/export
-    storageClass: "nfs-client"
-    accessMode: ReadWriteOnce
-    size: 1Gi
+    existingClaim: "export"
   consume:
     enabled: true
     mountPath: /usr/src/paperless/consume
-    storageClass: "nfs-client"
-    accessMode: ReadWriteOnce
-    size: 1Gi
+    existingClaim: "consume"
     
 redis:
   enabled: false

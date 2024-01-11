@@ -36,11 +36,8 @@ helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-nam
 `kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d`
 
 ## Manual Installation (base-cluster)
-#### NFS Provisioner
-```
-helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
-helm upgrade --install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --create-namespace --namespace nfs-subdir-external-provisioner --values=apps/nfs-subdir-external-provisioner/values.yml
-```
+#### Create PVs
+`kubectl create -f apps/pvs/pvs-k8s.yml`
 
 #### Sealed Secrets
 ```
