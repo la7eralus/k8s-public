@@ -9,7 +9,7 @@
 `talosctl apply-config --insecure --nodes 192.168.4.10 --file talos/controlplane.yml`
 
 #### Bootstrap (after autoreboot)
-`talosctl bootstrap`
+`talosctl bootstrap --nodes 192.168.4.10`
 
 #### Bootstrap ArgoCD
 ```
@@ -34,6 +34,9 @@ helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-nam
 
 #### Get Kubernetes Dashboard Token
 `kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d`
+
+#### Install Worker
+`talosctl apply-config --insecure --nodes 192.168.4.77 --file talos/worker.yml`
 
 ## Manual Installation (base-cluster)
 #### Create PVs
@@ -92,12 +95,16 @@ kubectl -n argocd create -f apps/appofapps/appofapps.yml
 #### Export sealed secrets key
 `kubectl get secret -n sealed-secrets -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml >sealed-secrets.yml`
 
-#### Upgrade talos
-`talosctl upgrade --preserve --nodes 192.168.4.10 --image factory.talos.dev/installer/ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515:v1.6.0`
+#### Upgrade talos (controlplane)
+`talosctl upgrade -n 192.168.4.10 --preserve -i factory.talos.dev/installer/7d0c9bb43d29c3a66af593485d6d95ae14f241c90678c9cc05a4cf99d928ec1b:v1.6.3`
+
+#### Upgrade talos (worker)
+`talosctl upgrade -n 192.168.4.77 -i factory.talos.dev/installer/a7bcadbc1b6d03c0e687be3a5d9789ef7113362a6a1a038653dfd16283a92b6b:v1.6.3`
 
 #### Upgrade k8s
 `talosctl --nodes 192.168.4.10 upgrade-k8s --to 1.29.0`
 
 ### Todo: 
-- Maybe: https://xphyr.net/post/ocp_syno_csi/#defining-the-synology-storage-class
+- undeploy kubernetes dashboard?
+- Maybe: longhorn, min.io, or wait until local provisioner supports predictable pathes
 - Maybe: Loki, Prometheus, Promtail, Node Exporter, Grafana

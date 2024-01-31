@@ -9,7 +9,7 @@ spec:
       kind: Rule
       services:
         - name: paperless-ngx
-          port: 8000
+          port: http
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -41,15 +41,14 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: redis
-          readinessProbe:
+          startupProbe:
             tcpSocket:
               port: redis
-            initialDelaySeconds: 60
-            periodSeconds: 60
+            failureThreshold: 5
+            periodSeconds: 5
           livenessProbe:
             tcpSocket:
               port: redis
-            initialDelaySeconds: 60
             periodSeconds: 60
       restartPolicy: Always
       volumes:
@@ -66,7 +65,7 @@ spec:
   ports:
     - name: redis
       port: 6379
-      targetPort: 6379
+      targetPort: redis
   type: ClusterIP
   selector:
     app.kubernetes.io/instance: redis

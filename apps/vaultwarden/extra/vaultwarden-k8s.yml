@@ -9,7 +9,7 @@ spec:
       kind: Rule
       services:
         - name: vaultwarden
-          port: 8080
+          port: http
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

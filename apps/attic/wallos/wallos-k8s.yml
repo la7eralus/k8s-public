@@ -3,39 +3,32 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   creationTimestamp: null
-  name: filebrowser
+  name: wallos
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/instance: filebrowser
-      app.kubernetes.io/name: filebrowser
+      app.kubernetes.io/instance: wallos
+      app.kubernetes.io/name: wallos
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app.kubernetes.io/instance: filebrowser
-        app.kubernetes.io/name: filebrowser
+        app.kubernetes.io/instance: wallos
+        app.kubernetes.io/name: wallos
     spec:
       containers:
-        - image: filebrowser/filebrowser:v2.27.0
-          name: filebrowser
-          env:
-            - name: FB_DATABASE
-              value: /data/database.db
-            - name: TZ
-              value: "Europe/Berlin"
+        - image: bellamy/wallos:latest
+          name: wallos
           ports:
             - containerPort: 80
               name: http
               protocol: TCP
           volumeMounts:
-            - mountPath: /data
-              name: data
-            - mountPath: /srv
-              name: host
+            - mountPath: /var/www/html/db
+              name: db
           startupProbe:
             httpGet:
               path: /
@@ -50,18 +43,15 @@ spec:
             timeoutSeconds: 1
       restartPolicy: Always
       volumes:
-        - name: data
+        - name: db
           persistentVolumeClaim:
-            claimName: data
-        - name: host
-          persistentVolumeClaim:
-            claimName: host
+            claimName: db
 ---
 apiVersion: v1
 kind: Service
 metadata:
   creationTimestamp: null
-  name: filebrowser
+  name: wallos
 spec:
   ports:
     - name: http
@@ -69,47 +59,31 @@ spec:
       targetPort: http
   type: ClusterIP
   selector:
-    app.kubernetes.io/instance: filebrowser
-    app.kubernetes.io/name: filebrowser
+    app.kubernetes.io/instance: wallos
+    app.kubernetes.io/name: wallos
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: filebrowser
+  name: wallos
 spec:
   routes:
-    - match: Host(`filebrowser.s3rv.dev`)
+    - match: Host(`wallos.s3rv.dev`)
       kind: Rule
       services:
-        - name: filebrowser
+        - name: wallos
           port: http
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   creationTimestamp: null
-  name: data
+  name: db
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Mi
+      storage: 1Gi
   storageClassName: local-static
-  volumeName: filebrowser-data
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  name: host
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
-  storage:
-  storageClassName: local-static
-  volumeName: filebrowser-host
----
+  volumeName: wallos-db

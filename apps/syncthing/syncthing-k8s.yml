@@ -22,6 +22,10 @@ spec:
       containers:
         - image: docker.io/syncthing/syncthing:1.27.2
           name: syncthing
+          resources:
+            limits:
+              memory: "192Mi"
+              cpu: "0.2"
           env:
             - name: TZ
               value: "Europe/Berlin"
@@ -37,18 +41,16 @@ spec:
               name: config
             - mountPath: /host
               name: host
-          readinessProbe:
+          startupProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
-            periodSeconds: 60
-            timeoutSeconds: 1
+            failureThreshold: 5
+            periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
             periodSeconds: 60
             timeoutSeconds: 1
       restartPolicy: Always
@@ -69,10 +71,10 @@ spec:
   ports:
     - name: http
       port: 8384
-      targetPort: 8384
+      targetPort: http
     - name: listeners
       port: 22000
-      targetPort: 22000
+      targetPort: listeners
   type: ClusterIP
   selector:
     app.kubernetes.io/instance: syncthing

@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sealed-secrets
+  name: cert-manager
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-4"
+    argocd.argoproj.io/sync-wave: "-2"
   labels:
     notification: "true"
 spec:
@@ -15,15 +15,15 @@ spec:
     syncOptions:
       - CreateNamespace=true
   destination:
-    namespace: sealed-secrets
+    namespace: cert-manager
     server: 'https://kubernetes.default.svc'
   sources:
-    - repoURL: 'https://bitnami-labs.github.io/sealed-secrets'
-      chart: sealed-secrets
-      targetRevision: 2.14.2
+    - repoURL: 'https://charts.jetstack.io'
+      chart: cert-manager
+      targetRevision: v1.13.3
       helm:
         valueFiles:
-          - $values/apps/sealed-secrets/values.yml
+          - $values/apps/cert-manager/values.yml
     - repoURL: 'https://github.com/5olu7ion/k8s.git'
       targetRevision: HEAD
       ref: values

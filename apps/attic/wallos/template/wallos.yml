@@ -1,10 +1,8 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sealed-secrets
+  name: wallos
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-4"
   labels:
     notification: "true"
 spec:
@@ -15,16 +13,10 @@ spec:
     syncOptions:
       - CreateNamespace=true
   destination:
-    namespace: sealed-secrets
+    namespace: wallos
     server: 'https://kubernetes.default.svc'
   sources:
-    - repoURL: 'https://bitnami-labs.github.io/sealed-secrets'
-      chart: sealed-secrets
-      targetRevision: 2.14.2
-      helm:
-        valueFiles:
-          - $values/apps/sealed-secrets/values.yml
     - repoURL: 'https://github.com/5olu7ion/k8s.git'
+      path: apps/wallos
       targetRevision: HEAD
-      ref: values
   project: default

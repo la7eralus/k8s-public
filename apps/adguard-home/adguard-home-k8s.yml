@@ -37,18 +37,16 @@ spec:
           volumeMounts:
             - mountPath: /opt/adguardhome/data
               name: data
-          readinessProbe:
+          startupProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
-            periodSeconds: 60
-            timeoutSeconds: 1
+            failureThreshold: 5
+            periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
             periodSeconds: 60
             timeoutSeconds: 1
       restartPolicy: Always
@@ -66,15 +64,15 @@ spec:
   ports:
     - name: http
       port: 8080
-      targetPort: 8080
+      targetPort: http
       protocol: TCP
     - name: dnsudp
       port: 53
-      targetPort: 53
+      targetPort: dnsudp
       protocol: UDP
     - name: dnstcp
       port: 53
-      targetPort: 53
+      targetPort: dnstcp
       protocol: TCP
   type: LoadBalancer
   loadBalancerIP: 192.168.4.10

@@ -20,39 +20,60 @@ spec:
         app.kubernetes.io/name: homepage
     spec:
       containers:
-        - image: ghcr.io/gethomepage/homepage:v0.8.4
+        - image: ghcr.io/gethomepage/homepage:v0.8.7
           name: homepage
+          resources:
+            limits:
+              memory: "192Mi"
           ports:
             - containerPort: 3000
               name: http
               protocol: TCP
+          envFrom:
+          - secretRef:
+              name: homepage-creds
           volumeMounts:
-            - mountPath: /app/config
-              name: config
-            - mountPath: /app/public/icons
-              name: icons
-          readinessProbe:
+            - mountPath: /app/config/custom.js
+              name: homepage-config
+              subPath: custom.js
+            - mountPath: /app/config/custom.css
+              name: homepage-config
+              subPath: custom.css
+            - mountPath: /app/config/bookmarks.yaml
+              name: homepage-config
+              subPath: bookmarks.yaml
+            - mountPath: /app/config/docker.yaml
+              name: homepage-config
+              subPath: docker.yaml
+            - mountPath: /app/config/kubernetes.yaml
+              name: homepage-config
+              subPath: kubernetes.yaml
+            - mountPath: /app/config/services.yaml
+              name: homepage-config
+              subPath: services.yaml
+            - mountPath: /app/config/settings.yaml
+              name: homepage-config
+              subPath: settings.yaml
+            - mountPath: /app/config/widgets.yaml
+              name: homepage-config
+              subPath: widgets.yaml
+          startupProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
-            periodSeconds: 60
-            timeoutSeconds: 1
+            failureThreshold: 5
+            periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
             periodSeconds: 60
             timeoutSeconds: 1
       restartPolicy: Always
       volumes:
-        - name: config
-          persistentVolumeClaim:
-            claimName: config
-        - name: icons
-          persistentVolumeClaim:
-            claimName: icons
+        - name: homepage-config
+          configMap:
+            name: homepage
 ---
 apiVersion: v1
 kind: Service
@@ -63,7 +84,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 3000
+      targetPort: http
   type: ClusterIP
   selector:
     app.kubernetes.io/instance: homepage
@@ -82,29 +103,232 @@ spec:
           port: http
 ---
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: ConfigMap
 metadata:
-  creationTimestamp: null
-  name: config
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Mi
-  storageClassName: local-static
-  volumeName: homepage-config
+  name: homepage
+data:
+  kubernetes.yaml: ""
+  settings.yaml: |
+    providers:
+      openweathermap: openweathermapapikey
+      weatherapi: weatherapiapikey
+  custom.css: ""
+  custom.js: ""
+  bookmarks.yaml: |
+    - Finance:
+        - Google Drive:
+            - abbr: GD
+              href: https://docs.google.com/spreadsheets/u/0/
+        - zkSync:
+            - abbr: ZKS
+              href: https://lite.zksync.io/account/
+    - Media:
+        - tvstream:
+            - abbr: TV
+              href: https://tvstreamkostenlos.de/
+        - lesen.to:
+            - abbr: LTO
+              href: https://lesen.to/
+        - mags.guru:
+            - abbr: MG
+              href: https://www.mags.guru/
+        - gulli:
+            - abbr: MG
+              href: https://mygully.com/
+    - Misc:
+        - Tailscale:
+            - abbr: TS
+              href: https://login.tailscale.com/admin/machines/
+        - CloudFlare:
+            - abbr: CF
+              href: https://dash.cloudflare.com/
+        - Simple Desktops:
+            - abbr: SD
+              href: http://simpledesktops.com/
+        - DuckDNS:
+            - abbr: DD
+              href: https://www.duckdns.org/
+        - dynv6:
+            - abbr: V6
+              href: https://dynv6.com/
+  services.yaml: |
+    - Infra:
+        - Proxmox:
+            href: https://proxmox-alpha.s3rv.dev
+            description: The Hive - Alpha
+            icon: si-proxmox-#E57000
+            widget:
+                type: proxmox
+                url: https://proxmox-alpha.s3rv.dev
+                username: {{HOMEPAGE_VAR_PROXMOX_USER}}
+                password: {{HOMEPAGE_VAR_PROXMOX_PW}}
+                node: proxmox-alpha # optional
+                fields: ["vms", "resources.cpu", "resources.mem"]
+        - Proxmox:
+            href: https://proxmox-beta.s3rv.dev
+            description: The Hive - Beta
+            icon: si-proxmox-#E57000
+            widget:
+                type: proxmox
+                url: https://proxmox-beta.s3rv.dev
+                username: {{HOMEPAGE_VAR_PROXMOX_USER}}
+                password: {{HOMEPAGE_VAR_PROXMOX_PW}}
+                node: proxmox-beta # optional
+                fields: ["vms", "resources.cpu", "resources.mem"]
+        - Synology:
+            href: https://nasa2.s3rv.dev
+            description: Brave little FileServer
+            icon: si-synology-#B5B5B6
+            widget:
+                type: diskstation
+                url: https://nasa2.s3rv.dev
+                username: {{HOMEPAGE_VAR_SYNOLOGY_USER}}
+                password: {{HOMEPAGE_VAR_SYNOLOGY_PW}}
+        - Traefik:
+            href: https://traefik.s3rv.dev
+            description: "En Route"
+            icon: si-traefikproxy-#24A1C1
+            widget:
+              type: traefik
+              url: https://traefik.s3rv.dev
+        - AVM Fritzbox:
+            href: http://192.168.178.1
+            description: "-> Gateway Edition"
+            icon: si-circuitverse-#ffe600
+            widget:
+                type: fritzbox
+                url: http://192.168.178.1
+    - Services:
+        - Paperless-ngx:
+            href: https://paperless.s3rv.dev
+            description: "Less is more"
+            icon: si-chianetwork-#5ECE71
+            widget:
+                type: paperlessngx
+                url: https://paperless.s3rv.dev
+                key: {{HOMEPAGE_VAR_PAPERLESS_PW}}
+        - AdGuard Home:
+            href: https://adguard.s3rv.dev
+            description: "#NOTPiHole"
+            icon: si-adguard-#68BC71
+            widget:
+                type: adguard
+                url: https://adguard.s3rv.dev/
+                username: {{HOMEPAGE_VAR_AGH_USER}}
+                password: {{HOMEPAGE_VAR_AGH_PW}}
+                fields: ["queries", "blocked", "latency"]
+        - Calibre:
+            href: https://calibre.s3rv.dev
+            description: "Gimme all those books"
+            icon: si-bookstack-#d9c6ae
+            widget:
+              type: calibreweb
+              url: https://calibre.s3rv.dev/
+              username: {{HOMEPAGE_VAR_CALIBRE_USER}}
+              password: {{HOMEPAGE_VAR_CALIBRE_PW}}
+        - Vaultwarden:
+            href: https://vaultwarden.s3rv.dev
+            description: "xtrm scrty"
+            icon: si-vaultwarden-#000000
+        - GitHub:
+            href: https://github.com/5olu7ion/
+            description: "-=Octo=-"
+            icon: si-github-#181717
+    - Home:
+        - Home Assistant:
+            href: https://haos.s3rv.dev
+            description: Automate Everything!
+            icon: si-homeassistant-#18BCF2
+        - Scrypted:
+            href: https://scrypted.s3rv.dev/
+            description: Watch Out!
+            icon: mdi-memory-#7047b9
+            #icon: si-qmk-#7047b9
+        - WeatherPi:
+            href: https://unicorn-pi.s3rv.dev/dashboard/
+            description: Wolkig mit Aussicht auf...
+            icon: si-raspberrypi-#A22846
+        - Shelly Eingang:
+            href: http://192.168.4.64/
+            icon: si-shelly-#4495D1
+            description: LIT
+        - Shelly Küche:
+            href: http://192.168.4.160/
+            icon: si-shelly-#4495D1
+            description: LIT
+        - Shelly Terrasse:
+            href: http://192.168.4.150/
+            icon: si-shelly-#4495D1
+            description: LIT
+    - Lifecycle Management:
+        - Uptime Kuma:
+            href: https://uptime.s3rv.dev
+            description: "~100 percent"
+            icon: si-uptimekuma-#5CDD8B
+            widget:
+                type: uptimekuma
+                url: https://uptime.s3rv.dev
+                slug: infra
+        - Portainer:
+            href: https://portainer.s3rv.dev
+            description: Happy Harbour :-)
+            icon: si-portainer-#13BEF9
+            widget:
+                type: portainer
+                url: https://portainer.s3rv.dev
+                env: 5
+                key: {{HOMEPAGE_VAR_PORTAINER_PW}}
+        - Dashboard:
+            href: https://dashboard.s3rv.dev
+            description: At a glance
+            icon: si-kubernetes-#326CE5
+        - ArgoCD:
+            href: https://argocd.s3rv.dev
+            description: Let's get stuff deployed!
+            icon: si-argo-#EF7B4D
+        - Filebrowser:
+            href: https://filebrowser.s3rv.dev
+            description: "Files... Files everywhere"
+            icon: mdi-floppy-#2bbcff
+        - Syncthing-k8s:
+            href: https://syncthing-k8s.s3rv.dev
+            description: "Like rsync, but fancy"
+            icon: si-jsdelivr-#1ca5d5
+        - Syncthing-nasa2:
+            href: https://syncthing-nasa2.s3rv.dev
+            description: "Like rsync, but fancy"
+            icon: si-jsdelivr-#1ca5d5
+  widgets.yaml: |
+    - resources:
+        cpu: true
+        memory: true
+        disk: /
+        uptime: true
+    - search:
+        provider: duckduckgo
+        target: _blank
+  docker.yaml: ""
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
 metadata:
   creationTimestamp: null
-  name: icons
+  name: homepage-creds
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Mi
-  storageClassName: local-static
-  volumeName: homepage-icons
+  encryptedData:
+    HOMEPAGE_VAR_AGH_PW: AgAxLNQYNJuoEl1X+thtxNNhmiI5g6UITcDxcocbDp8dtJG+isIagSn6yr2flEzsSXzonS2TLpbvcTXxl+qXv6eyDYrlCj3vC8umXY77ffPpXxy3yLTh3VcX1kUkv5k/0W3VEU9oqm42HlxH9H79dF4s5bbGs6XZyk7P4ESxmnqg89oZOCAxz9LuvpcQFmVBYyP9kvvmJHgTIN+BQk/p3hIo6maJrBlZ7KlknoC7jICujRUIdI5ZdUSPlGYCvWRCmrXjr8XsrS78PCKWX51p9v8bgbYKylI/c8xdZWjASmVxy3nOlGBqWL0VkwwoFHgcbIvvZ3PUtROXAdmhp+f28p4W8Izbt1luGcE3gf5+ItejZRCkClC03lGOfaQKOWlcU89sSHFD1Le2Was7Daf2KFtEw2SL84JakLn30qrYQNiaMjiQz+ZF0YIxU6oXhdvSeKs0qrYlYbMNP7jjKm1H/DlfaQlQ7l/bhX5lmNTPpoj4J29hyLWir1erT2c23372jXYf/NqQ+1u3A+s3VL/y2Q7d6Onnk40n8/nKk79fPtz8P9aXOqXLmQcG7PKU5OlF8rcSk4uoF2qnqyTeNy0QQtEOBrObab45fspS6E1Gc7zIR++Jyli4EFqW54I2U0pEn+zUOZIKiSwGSTYL1ibaPeo1JTYapevXVAy7VGQAXBAZ394od8bdx2EkTHMNSSxron1u6UwSIN7vVPOB0sA=
+    HOMEPAGE_VAR_AGH_USER: AgB2iCspfDTHn3TMRArW5HqS22jaqgeCGHQ/wSTRklci6H+pRja0n0ylzvb5PSFHzbUtnI26BU0OPmK65hj3FJkhI7N4FuqGwS/nSE2yTgWBmWQA7U3z6UN+ArdODOhDJ1yjx+P66oV7hnK4RsiINcL3uil4OVd+O5J4FGf1f79cV1ODo7BXUseT1Azwy4dGadCkchyyukOuh5XyZpWCerjAxgKrsDlxI7D67o6THexqKw+KIbts98n9jf+nKLwwAmOB/2hXWmYnjeaIZEnKC95AEQ+b+NZRrpF+9APjKo+KL+F2rpyuVhKOSMHFxG6ej17elBuigLrixs2uZxYHqFv+pPNtL4eXxwAdphkQmNcQRYhhwFhO4ngsLmeY/6fPuIzIzk2hWklF0LPP0PfrgOxYuQU+9gTbfrtjVCVyGKKd/46UaPGLLLmc1x1OgfWbaHbCi7B6v1ulr9OszjS9gqkRbtHMrje+ZIYqkTom8FBF+NrMI8OV5J8O+qb9cvTyyiduEXNjKMqaTb0RL0tLBFhbfTQD6QpxQ4sPchw2PhwhmD9qws73+DJb9IaYBrnXXeHTvnQyI64LDT4N69X6tP13U0XlbiXWUbAV5kMH0mkB29ix1Xb2J6e+6MjsSLdAnNX+jpOEzHJDykt9EkrifZih6PB3noLZ1pEimGDtuHYz6cf62SZN2UFxxpCnwHlxG8BJlrbMeVMd+w==
+    HOMEPAGE_VAR_CALIBRE_PW: AgCTOLFM7iNlAibEsIs6C8u6MGfj3YRYbhgrLthy4kayC30O177SPmOr4tAZaclm6raNjH6FyFhi4f8eWo4RMqQ2/lvOsrOsskxmddbAlZt+7vHZa/Se7bTzDruQLGm8slkMZB5SVx6j+Yhwzt5/95e4wAL8uoWDjgrYfPMN9gImSYPVNj1MbA4N/ey1K02BLjPgGAI4JvePcY36EA+LR0lSFt37cEtmMF+8qlgQMj1UAgg0reXJvWIpBsbFFiNiW1GZF+RBOdGnBwVGowEXzSaPDGibaSiOx92r3mmbIQEu6oPti9VKnRsDTjqnRxapjuVb6aBm+nFa6D0ugw/XIDHoLmwHDmxmZ3SMatxhC1OchKmssp54hKMQH/LWSN1RkNjdjsQBD38G0kHMDkzTHYJCgxB6kIzrwyeBgTvP2aH9mLsS0cYt9bjEHOWT4JjpK3Pis2+PJZgW0WNpiMyVrokItz/+20x/QBL5AMVL7w9yDUZnjNRONaUU8cnheN8GLO9DLd0dV2P7rWSbAjyEU7DpLg4Kl8OUbES6WR51K23axajcDJzUfs6hwcYcI3aom4YWZhufxzGg8HrAVMOra8afwwtJ4zIh9ErLqLxUXHeaKtLfWe2lW4rYuGOD6DUDF93fbB4Nv0CrScbIJwDtR3b5hfKHTzNAefryqlek0eNfI8cdKZZwR5N7kpNjxuK113UgnFZ/xkSG7qq8bA==
+    HOMEPAGE_VAR_CALIBRE_USER: AgA1rHEzA/BP+kxwYEVHGSDkMa9K7HWe1s2rb3LnCD1Foq1vX0IjUZbaWCMfbVrHzlBID+zJAPP4eyVARAgOdmaHmN52PKcJt8zeF8n05/pMqk2sS+DijjIyka3keR+Am1XRC68XniOt5nyz/4vVQ9EOhD3J9E8uW1AvLhGWmypoWkAvytSbJHbXSFqZNuEKBLLaOHdDG4bV8CZkjoYA2KmuoKii/dYbbiZE62jmDykkxyBEcb/2EwXapH0iiBWuQQTo6jL+dgjAfKzDKEwspPum0oKz/ZWPefkkMfVCOZFOotf9kJriRcFoHAJ1M9XvYewPnIlrKiQ+pvvMLxtCdVI364wdCWsqy6tcpHMrJdViRUba0VhgP2j7NoFg978npxwdWU0GusQcJxaPwJe4ejw3EgWc7L8tNYK+P54mXIbomp96mLddDiD5ugALfSsJAjsHCkzuOV4dqUm7qG8OJq/nSZGM1iRBX7Xv2XabhuPFT4tZtdY4eRWNZ5zx69/Q43u2Az+olScfhvY6wNE9FC7lgEoIGySAjwvL3QDwO239tDRPeGrepcfUBCevFCx6I/YgR5RyRQtj2z4XZmsme0f1wVY4poXRf7oxfQBmU3o/rEfN8o/pB0RgHmLcXPduo66ipQnU204q8ty0Wo3AnX9HU5SergTjSQ31GR3I/XAVyo15PwNctQ4DHuJEW1gZnH4Zk+kZCg==
+    HOMEPAGE_VAR_PAPERLESS_PW: AgA4IP2A67zbBqVRUAJudRClRAskDa3gp3dpI40opu424I0V3vP/2Ue6E35SYFU9CRgZCntyoX9tdXJFcrUYMjAZwC4knZVTlxjiWxnQKGSpgOqWIX1xvD6RJyQxjTrgTmCDUhs7KtW/FyI4KZk/d8wO/7W3bd+CzL4BKFvGacnF62a2DOcccvVn2qr0Y4QPjZ8V0jxN0Y0SM3CVsePpE4k985M9S3n+5Pohm0u8quGBVnmZslxPrz1Ehdw+4pJl/V17kQi5U/kckmw1eF33mO1UFET8EPRIKNolFo63JCJlLlHHTRZrjCGBfMuNMZsuj8cCAi0g+D1ULXbo1a9De1zNKlUPHhr5H1oWxuLF5WDwNFbXGDmKB/x4R4H9v234dsd6QZXfHYfSZQ3geapUNwebmJilvzGzsq5CLEv6iUwsiw98OpSwf2VQgMQSJCOAmLIeJW+8DCThF1UvXZI6mGZBzVG7XIkWqj3jfRNvJOjbSIQOSGHLvEpBGYoH0sdrozPzZXD5Q8VgzW+W6TkcqwgmVmw6osqQ9ta6pVPajNxa97W7DQwb3jAVxYNMGCEYkDiscbVWE+Zc9CJmwd+RnKR2inOvbxezpzYI9v1qOEpC9YTBUXqTpIk0LhxcekRpSGq40bZU9vqMuli4UjsAICmQrTwsLsXxY1K4k87XT1yTH8HHtuQzJX14hqF6QiZBI5xx7Im5r0a7S/xGjoVeoZk957LLjLqpCOXO2n/pcDgQP1f5X5f8V8WY
+    HOMEPAGE_VAR_PORTAINER_PW: AgCdy2kdD4uPF/s9MN+7Wq8PvSz+8vjlfv8Ov+AF7by1L+lEj+lkBN9dot2pqknjGK8NVKh6q0DqPI9/0neIb9xOuDL1D0VTLhHAYpVvQ7pHsgjMapdo6ZK5eRyjWB9XOVwszUvJohGtp1GXr8Xn3ub7Wn8g+NDFTYTqge42iiTIzQvz25TaNgdrnNczXzwQ8Nspq4KoYdrOzmBpeTf0yTa5bxUBmDqnKZJbDJL/UiU3r/NCgpV/ncSmOzoeBJV87RnUur3UwUdBooLw/K0NA+OBVHVwqUQn7vlBe5AK3kUvk+TZ4NcDwUo2DBUIXQp9Oxi+U+bg1RoKqK43CudCga4ASM6hhIsOxPbnJqhqQktAd/Z+Pv+H5EjJvouKkgWvTGVf3yLRIvvlSxFkzmYBJpozw+tqpD8ufqHTLtqjBbtn0wADcM8vGBkrAxyPTmZr/QQGbVxJC9zEDJv8y0yw4YU8CtX2gDamQ55nsSQSluhWsK3MbUuhnYK2wTqXuswg+ugNKTtyuxNOr3N4D2p4Rk0En9Adz2PYzR2qZ05o1D7LqSMFNjOman31WQxcy67sAoazFYi+vecIk4ijuuJMdwSy9SdrKODCFQBs7uLm6lqGImhhT+XHrDUiWBKXZZPePr6s43TxHobhRFh2ycaowVZDA+ssway8eI+VJkPIRrwFYQUDay5X40rcQoN3sG5M6pj0oePLhk05R/ges7DV2KR6a+c8luvD2XqV6ykVfyIPFIVnia/ZxhhLxKOG/2oeKn8=
+    HOMEPAGE_VAR_PROXMOX_PW: AgCETQwNQpMOqp3yf1qUl7AHZV6GJ0dXdDAM5R/1i+ITA1n22Kay/gXF9CWliW+5uxAUJXxHQhrbeWhxnDDkqliwQ+bS4EpZ+DlV5vQjxRO7Rlnmv0JnwtiWcaxLEluWGFPk/2SOGOJrnSt5FMImWDQ6868kPOEzDeVGv1QjJkK1TzSD2ZA7oibTnFDVS9Te/hYDGfAjMEPyiFxLryPueEE1qVvuFbvrG1Oal7gmQLS9d9Klsue7MUN1dAxXv459o+BbKISWByZE5KYrlJF3FdFxbKDirm7rbPYCfNuZ5XWJdnNU9bBVhBymjcWy3IzOcw+gfMAxGXN2Ih3nvpDkLxvkmMT80uAg91da8Jug4EY5Fektw/DrX1CWHQqlln6OktT19WOtmRMZa6wBX68tziG3Z1a5CqK5wXZc/dkwq497WN7HjcnHhEseBnRhGqiBMzR8KZ28MPMSDCDPd1jMX5H9kWsPW0FGQMQ88e7LwHhuQ74N3lo/W32lCVhh2aiJZy6GculKziwH/qm+XnWCudXyOtbvsETM59adpkpTciYCG38Mv92C9lh0HsVm3N67sI1k9+YsY0g21AN/+lo3anyOLC8FLj+EPtoB11JfwcEfN+jdm0WkAD8NEhO1+EuqZFlG9EHjMBpN5d5hNSKGa4Xd4Vp8aacw9VSJ6dWcjsTjwYTJkT3kQ8Netc1GQxmf0FxplrI2nQhB1i0iwQb4Nb9jw1w3AHPXfXv8Qq4aQsfo8TYvTsk=
+    HOMEPAGE_VAR_PROXMOX_USER: AgB9rZ6D47JSMN6CJFIQ6zvFAz6UO0qh/9BLvFKzDQebeAYUa2zyXzuaEOTBmM63NhWodxTOMtvqz83tKJDTLPhK9kNwECxq70vrdGX3RMnZ5W/J6qI6dVylG8zcyiCKsUcc581XqsnsBkc6H4Zd5woaLZutu/XItjjqdl0bp/4JbubsIYn3Lut4LaFbZlqcxp1zFt+KcnYtFMiD2baho1/6kbiGwUPS8+0R74GCJoOplbLjGUhBAd+FWt+k4RWZkFWIMgTEazdNwccRMkks0TsrP05yInkLNiRqk837nagAADKHW2U7ZDNd4iOAbwr/5TqSlxP0icqFVpW8nB5xu3Z6ZnateaQNg+Vai1H1CaYWzTmvqell2pnPqwiu6TZh/ZPFK4RGmYNRjmJTm1hnWky5S/Hjm9wH17DJy8jN49wtl4QZzfMTTx7dpqOCBjrVrOfxjZr8JdSCvOrWl8gRKv+kbkQ5Uu68i913D/NnCXBqkrm1R9hjpGPdsm2hCsdlGU8LcvSfshw/ocb2/3N/lFhwo8VmX2OdFyw6nkMAGUcRGBl4kANnFvQpCjIo3SfRSSoQlHXOzJ1P1RrGw1FauV2xxRM8mggZjOHEfGttIo9muI5qjTeXdDFta0mt8cezLL8OwHA7uhnuH3Hy8aT3dF/3jNt3wXhOy46w62ksOzvTFTWoSzOmqJCnPsDelxDxtnbSJGUTsBpiaE3hn246K758pM/vLPHfle4=
+    HOMEPAGE_VAR_SYNOLOGY_PW: AgBoEeGXrrNdM3/daE/4mc8OOqHGf7x8JJmDEd7aPacHfOCB5m4R+nvCYEPF3w6bk6AvRYATrY027RexIoad8sT8tX4mYl54x3dSrdAAYXJrB1+Ch/f2mpX8Tmaji8iiPkhyxXeRQ4d2g9b6dt7uXagFbXzf5qiExWL522NEI3k6XpcHIuvNjbdfk29zZoKxzkWkIxqsl6+x0U/Klsf+JqUQGTiA9NQvzYND/H3n262uD0ustTMY5m01rU0FnJS/w5Hranhz2IreUaJ9sR18yHuBWDaFnamqeAToWUz7/hoI6evU963HVBS+8LbGIKjvS15CEUZIJFqDxb6OcY2TNjr90p8AyJH2orxnl+Rc+0/lbDDcNg2vm0AXSRzUdoIwFEL5RGE4Wvi8NlESz23q9y32gkZn2X8uTv44nvRV0x2FNqJUUGlUNp8XhdMHoHDGQmTzn+lvj33sAHz2qxRguhObpuhK8b/jep5ldRWqgcVZN5LSjnZvpKXpv7IFpuwOBaX1y0utF3f/Iu+tuMynXdkrf9y4VuVA4jP7JhJ6H3xUaUnX8HrBedOEI1OpzOcW4cYadPIFW4sUwNRcAOhgyfneSVERrjn+rnsrSQy5/VRlZyKJhZj5R6KRf6DY4HPbIUuyOS2+3NAE2rMO3tKUOFpMNTANpyubzktJ4JO8yVbXn5B9Q4AdrJeH71Qd/ipWZnTtAcYoWvI=
+    HOMEPAGE_VAR_SYNOLOGY_USER: AgBp3j1JV49MCGeXrgSDytGtVcYX7ddYbTcAWvZ9xZXVVGZ5tyMIN+YoPV62FK5AVXBjU0JyClsTeEdmIht9oO2B4FJLPGw2acf6O2rXzIabHbI5T1oZtygLVACDnevCSQ8Tw8Z/uqX+Qa56SCdmuPhx0bKAmFvE4WwqSe/kOmxY+3O8LWqRkw9UCTysIS18AviAS4DbqSMwlPs80bgxXjw48n0RIAqyHKTX3Y0dNGa9T4cAB08+m/6WisAKgzpkezut8zlS1DMFhM1oGFzSdpU19RYdu7he5ltTWs5gygGTYgSbvH11LkIttvydYBLtXTR8Fw4JOumLg6/xx2lPuwO2f7DCvNTGk25iwqx3K/+mQUttddzSMEhzL51u+vKDE+5pKXbvrti7EwNJHk5SpfX1BZKW33rlSoWRftPkQqd+Cbc1zE1xVN/QZ1myLoPYuK/NmvQ/DndRuplM7WQuHdvyQBrRbWI2iu9FzMbjCv4iSeD8jZVF89R34I7LdY34avrxTHEnhmUmm00/exsAGnB9kN/pB5MlO3/N1I88cQD7HULZUEAb4V96fm6FImQkRltw9my0XjUfhs9NQQkiW+WcnnxI1SvsZ0+APn6Z6WdrX92Hge9UETqGh8CWXgN/UaiZLstI7wKJtYdTsFZrarMZrunwVbk08S9/+FDt1LZrIoaiTGj4OG6YerrVsUAqAOgBpxOKNdE15zJUQw==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: homepage-creds
+      namespace: homepage
+    type: Opaque

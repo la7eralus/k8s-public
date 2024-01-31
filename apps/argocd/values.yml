@@ -1,7 +1,4 @@
 global:
-  image:
-    repository: quay.io/argoproj/argocd
-    tag: v2.9.3
   env:
     - name: TZ
       value: Europe/Berlin

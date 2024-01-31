@@ -1,4 +1,1 @@
-image:
-  registry: docker.io
-  repository: bitnami/sealed-secrets-controller
-  tag: v0.24.5
+keyrenewperiod: "0"

@@ -22,6 +22,9 @@ spec:
       containers:
         - image: linuxserver/calibre-web:0.6.21
           name: calibre-web
+          resources:
+            limits:
+              memory: "256Mi"
           env:
             - name: TZ
               value: "Europe/Berlin"
@@ -34,20 +37,18 @@ spec:
               name: books
             - mountPath: /config
               name: config
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 60
-            periodSeconds: 60
-            timeoutSeconds: 2
           livenessProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
             periodSeconds: 60
             timeoutSeconds: 2
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 5
+            periodSeconds: 5
       restartPolicy: Always
       volumes:
         - name: config
@@ -66,7 +67,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8083
+      targetPort: http
   type: ClusterIP
   selector:
     app.kubernetes.io/instance: calibre-web
@@ -82,7 +83,7 @@ spec:
       kind: Rule
       services:
         - name: calibre-web
-          port: 80
+          port: http
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

@@ -29,18 +29,16 @@ spec:
             - containerPort: 8000
               name: ssh
               protocol: TCP
-          readinessProbe:
+          startupProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
-            periodSeconds: 60
-            timeoutSeconds: 1
+            failureThreshold: 5
+            periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 60
             periodSeconds: 60
             timeoutSeconds: 1
           volumeMounts:
@@ -61,10 +59,10 @@ spec:
   ports:
     - name: http
       port: 9000
-      targetPort: 9000
+      targetPort: http
     - name: ssh
       port: 8000
-      targetPort: 8000
+      targetPort: ssh
   type: ClusterIP
   selector:
     app.kubernetes.io/instance: portainer-ee
@@ -80,7 +78,7 @@ spec:
       kind: Rule
       services:
         - name: portainer-ee
-          port: 9000
+          port: http
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -126,7 +124,7 @@ spec:
     - name: http
       protocol: TCP
       port: 9001
-      targetPort: 9001
+      targetPort: http
 ---
 apiVersion: v1
 kind: Service
@@ -165,3 +163,4 @@ spec:
         ports:
         - containerPort: 9001
           protocol: TCP
+          name: http

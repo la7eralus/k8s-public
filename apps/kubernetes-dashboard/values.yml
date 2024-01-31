@@ -1,24 +1,5 @@
-#v6:
-image:
-  repository: kubernetesui/dashboard
-  tag: v2.7.0
-
-#v7:
-api:
-  image:
-    repository: docker.io/kubernetesui/dashboard-api
-    tag: v1.0.0
-#v7:
-web:  
-  image:
-    repository: docker.io/kubernetesui/dashboard-web
-    tag: v1.0.0
-  
 metricsScraper:
   enabled: true
-  image:
-    repository: docker.io/kubernetesui/metrics-scraper
-    tag: v1.0.9
 
 nginx:
   enabled: false

@@ -6,14 +6,6 @@ image:
 metrics:
   prometheus: null
   
-persistence:
-  enabled: true
-  path: /data
-  existingClaim: "data"
-
-securityContext:
-  readOnlyRootFilesystem: false
-  
 service:
   spec:
     externalTrafficPolicy: Local
@@ -30,12 +22,6 @@ ports:
       port: websecure
   websecure:
     asDefault: true
-    tls:
-      certResolver: cloudflare
-      domains:
-        - main: s3rv.dev
-          sans:
-            - "*.s3rv.dev"
   traefik: null
   metrics: null
 
@@ -54,10 +40,6 @@ env:
   - name: TZ
     value: Europe/Berlin
 
-envFrom:
- - secretRef:
-     name: cf-creds
-
 logs:
   general:
     level: INFO
@@ -67,15 +49,10 @@ ingressRoute:
     entryPoints: ["websecure"]
     matchRule: Host(`traefik.s3rv.dev`)
 
-certResolvers:
-  cloudflare:
-    dnsChallenge:
-      provider: cloudflare
-      delayBeforeCheck: 60
-      resolvers:
-        - 1.1.1.1
-        - 8.8.8.8
-    storage: /data/acme.json
+tlsStore:
+  default:
+    defaultCertificate:
+      secretName: le-default
 
 providers:
   kubernetesIngress:
@@ -154,6 +131,48 @@ providers:
               - url: http://192.168.4.10:8080/
 
 extraObjects: 
+  - apiVersion: bitnami.com/v1alpha1
+    kind: SealedSecret
+    metadata:
+      creationTimestamp: null
+      name: cloudflare-api-token
+    spec:
+      encryptedData:
+        api-token: AgBgW9R4gPAs6vIbxaR73ctKwR4O7fAr7N80aL16lo+jCNd5VzsAQtG3/8r4tzTM98SwvK5L7DBIzEzglfzMANhhef1LNQ0UUiAxHXOD3/00UxhFdCE6r8Z1C6JSPsu26Hd59koLLNCWTCWzShjVo4lAVmEuQDqZlby0taVpw+8pYpVVwcb4OvbQ2Sx1SY2TZH3AOOKBBhEZ0zbp9Vxz+Uolg6EesJMj2Q5/Wk8y+tYBKLjQVElKW7cg/gfhIhI98Clv1QJyYtOhGcUSDzdWa09tdxFL65NnVYJ1+a5PFTxcQ/75SM1kmdnXAmhMgX3tSqxjlrFIVCIfMvLlAO5NX/6ciyyhKMXSxPaAGZcvX7BuvN/aUB+j9uvZoM27qOBuivundWl+j32o2oW1cdTsT3CSb4jn27KBO9sruRsm7wWrBaLDVZyS3Ou3+/klTNCZzAX+VcLrIlObMC054R/hMGSI+R7CATtEycTxEK6cES1J23zx0I4de8upBV6RIAwX5zjd+eEjw+nSV7vWa75exvgXTbHnT0QvDlr9K0wNpAa+SytmubWnSVs1/o7tJCk3wKOIkmMUDsO+nRnHClMe23onFXIrqVuNjoPosQVUejn92LvGIhs39Ue0je24k4qGGx5LrAXX8eL+TS5j3rF5xgkVBaCoyQeKlqVi2N8ijNhvNOEJ/q5CL6nwqsAJkYRTxYLZ+he02hwtKXSI37OwJaOjvxXNuHxFZpyjR249RMp9OBz4yqqmCpfv
+      template:
+        metadata:
+          creationTimestamp: null
+          name: cloudflare-api-token
+          namespace: traefik
+        type: Opaque
+  - apiVersion: cert-manager.io/v1
+    kind: Issuer
+    metadata:
+      name: le-dns-issuer
+    spec:
+      acme:
+        email: fach_limousinen0i@icloud.com
+        server: https://acme-v02.api.letsencrypt.org/directory
+        privateKeySecretRef:
+          name: le-dns
+        solvers:
+          - selector: {}
+            dns01:
+              cloudflare:
+                apiTokenSecretRef:
+                  name: cloudflare-api-token
+                  key: api-token
+  - apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: s3rv-dev
+    spec:
+      secretName: le-default
+      issuerRef:
+        name: le-dns-issuer
+      dnsNames:
+        - '*.s3rv.dev'
+        - s3rv.dev
   - apiVersion: traefik.io/v1alpha1
     kind: IngressRoute
     metadata:
@@ -168,33 +187,3 @@ extraObjects:
           services:
             - name: argocd-server
               port: 443
-  - apiVersion: bitnami.com/v1alpha1
-    kind: SealedSecret
-    metadata:
-      creationTimestamp: null
-      name: cf-creds
-      namespace: traefik
-    spec:
-      encryptedData:
-        CF_API_EMAIL: AgCM79ndodRiZ2IKa0k29saAC0XEZR0kultj7Lv7x8R38ymC9rDMpMk4TRaaWn8pAWnRPF46sUuaoyq2pATBD9i0oEZ9r+0AGfgTf5Kqh7VKHbP0vqZ9ewd/lSOWlBY3nSEkec5h9UH6/xWky3fF3FOnkpSBrCUor+9RYeMjDCGlbJifHpHGyW2uH5Ev34ca9t+nSwdFaXiHD/Q+Ahs9lOc39v1UCIRK8mTwIe64e9JUEfT3/VXdzgMAALYhx5ZbFEKX2oBRRTls5UCYGSuXVR3SE/73w6OAqZ7OLzRkx+OU32X4fjnPyDiVPf3yYz+XsCM10pLxx4rJqtZR1qoEHBk6dkyiS/wG/K/SvZZIc+vabaMYv7DyC98hgBsLA5gVDY9mq4YFMiwRu7AQs5eH8EtEyqw+TGm4L2aYhakGW4ocT5EvrYRxUdaCmOiOnGG0kt3X3sDSsWqbqkPnR2SyfdgAvwIoSe6PdjkeQxg5sOTdA9PAUTICuUxyVRQS/c8xAho4abnJ7cMuADkBnzCMXSePfeqjb2/OPl+1iw/AcnYa/dOaRjwRQ4UXKbFzjggvzIXeaULvrXliJDW58xUV2L6pcCop9JM+10vBeu5LF1AxBTBW4yAb/oMtJd3O8lST5TVEbUDl7ln49VIyGSwypWpJgdeqAvFcesUGspsjM8BNK3cyyGWzMMOBfjhLiTdkMkGEWGoCDY/p4lUYv51fc347ew7P/Q==
-        CF_DNS_API_TOKEN: AgBV7UulSS4vtDZEg9XnN/em/BriJ1F3v0DsbJ2YjgInZ2iCFdP14N++EwO2OC60g4oVExzm37KKsZirkAfY7MD4/6m3tuHH4tQ7JGhbcIwf/DWEI93jjhG15CtS4GhBhm0PxlbJzwzzMFs1jjVDcrraY7QRgTatZZ+BGwbzYtC1N5Vh1g5WPYmnQrPxtrEiC9ataPnFpZsxaQXApfLyvwttkBa2qUqj+IvVjvxpiWbEA7UQTNYriFp3XmC9a9iRiJbg+7jZBs8XGC60ioWgyVafYYC9cY3y9QsFLTrgZSJ28a16RZXIShPlszBFdlNH/EktQJmbNpWYLzbFZ1w5k6Q1fqfTJF6w8+VP4iWUcDG40LIVZ8ot7WpYRtL8+sTARUoX5XMZYmX57XSmhg1C/nSDNZMxbtCfSEOuQEa6n/8CTZ8jFn5aBh/hY0ohnrxKCPEltSey7e2oUBQEY26Y4bAaEqbhI7nj3OYWRZv/Yah+eIuqg26MovDFhXz1wXt+97OXGnVKE7CsdL96TCPzztIhsG++MWcNf31q0uxB0KUXlfghxZO06uriIt4+eGuLP3bgIAdCgPbXU74p74IYneUUkeTr7Uoz+xHZOCMFPHe2F4Inq7BInzR+mmunoZNCzcyftSprQE55S6GU4M6Rpk07nQHbbMHuy5t1510p5o0R8rhLiDh9Ff/CkTYLk+0vM04xdufXrgy5WlEnY/V7ydq4fRZPAYj5Sf9Qg7/4lvFv/x0uXpJEQycv
-        TRAEFIK_CERTIFICATERESOLVERS_CLOUDFLARE_ACME_EMAIL: AgB1hfovu+oVrtvXcm0wgAcgOxx3wiNvb8PQi+TeH1CCEPoRiNGUWfD2WUMBDv64rRwd5zkUxr9rN0PS2H/igaNbbsGSR/8MTyme/zh2W0gvmduRZQghWH8+lY6jgB83Fyekso1wC85hGJOoQBHTzsTDvc9fLOpM65F53JoYuY207oMZJUnzBBEBEOHMlK8igA2oyQV7i2iv3/5b4FNbYuMXC2Cf6mgBWGdJ4zDqrlRUkiinXiE0kIfdo4E2qqaTglyUsmEQOhDjJa+vnlGQ7v9lttuB1sv0dduC72JL9JABWvkcqqXDHrWo0DPCqYpKG4zroHbu+iSCCPdS2ob1F2Yod4gzGFYCu1SWf2y4o9Z2tlNrcd03SqFgd2VDStTc9K9wv5MIZRhu4cVOt/N+VJdALZB++Ln1MtXg83jdPZjUpGythb+Mi7kOt1N69+YZpeTXFdpztPwxzXfdz1YrfdU+Nl7a/ORjIFfALu69f/rn9a72c2H0CNLbxKpCzp/509eRsRfxJk50lRf/E0ptaNOMqCzC1U1iiNNwJlZxPqwPtiFec0MFuBVKUIO4sYoGfQdgsWjwFgNviZVmtt5XcxmiqOShna4FTfst4km3g1zudAMARaqDyB6ZOIC6IQ76XfHlPrIufUkIS8ojgMOeysBlFxGYDPu1cXac5D8t0hR1spNfkkq6rs28I5nCOhqh611XErf0Fvk6dUffV6HA1Tn5us1Ucw==
-      template:
-        metadata:
-          creationTimestamp: null
-          name: cf-creds
-          namespace: traefik
-        type: Opaque
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
-      creationTimestamp: null
-      name: data
-    spec:
-      accessModes:
-        - ReadWriteOnce
-      resources:
-        requests:
-          storage: 128Mi
-      storageClassName: local-static
-      volumeName: traefik-data
