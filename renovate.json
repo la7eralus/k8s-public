@@ -24,8 +24,8 @@
       "dependencyDashboardApproval": true
     },
     {
-      "matchPackageNames": ["linuxserver/calibre-web"],
-      "versioning": "regex:^0\\.(?<major>\\d?)\\.(?<minor>\\d+)$"
+      "matchPackageNames": ["longhorn"],
+      "automerge": false
     },
     {
       "matchPackagePatterns": ["renovate"],

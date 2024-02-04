@@ -1,20 +1,36 @@
 #### Talosctl Config
 `export TALOSCONFIG=~/Downloads/github/k8s/talos/talosconfig`
 
+#### Create longhorn Systembackup
+```
+cat <<EOF | kubectl create -f -
+apiVersion: longhorn.io/v1beta2
+kind: SystemBackup
+metadata:
+  name: reinstall
+  namespace: longhorn-system
+spec:
+  volumeBackupPolicy: always
+EOF
+```
+
 #### Wipe/Reset Talos VM 
 `talosctl reset --graceful=false --reboot`
 
 ## Initial Installation
-#### Install VM
-`talosctl apply-config --insecure --nodes 192.168.4.10 --file talos/controlplane.yml`
+#### Install Controlplane
+`talosctl apply-config --insecure --nodes 192.168.4.6 --file talos/controlplane.yml`
 
 #### Bootstrap (after autoreboot)
-`talosctl bootstrap --nodes 192.168.4.10`
+`talosctl bootstrap --nodes 192.168.4.6`
+
+#### Install Worker (Change persistent hostname in config)
+`talosctl apply-config --insecure --nodes 192.168.4.7 --file talos/worker.yml`
 
 #### Bootstrap ArgoCD
 ```
 helm repo add argo https://argoproj.github.io/argo-helm
-helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd --set=notifications.secret.create=false
+helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd -f apps/argocd/values.yml
 ```
 
 #### Import Sealed Secrets Key
@@ -23,7 +39,7 @@ helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd
 #### Bootstrap Sealed Secrets
 ```
 helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
-helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-namespace --namespace sealed-secrets
+helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-namespace --namespace sealed-secrets -f apps/sealed-secrets/values.yml
 ```
 
 #### AppofApps 
@@ -35,48 +51,20 @@ helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-nam
 #### Get Kubernetes Dashboard Token
 `kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d`
 
-#### Install Worker
-`talosctl apply-config --insecure --nodes 192.168.4.77 --file talos/worker.yml`
-
-## Manual Installation (base-cluster)
-#### Create PVs
-`kubectl create -f apps/pvs/pvs-k8s.yml`
-
-#### Sealed Secrets
+#### Restore longhorn System
 ```
-helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
-helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-namespace --namespace sealed-secrets --values=apps/sealed-secrets/values.yml
-```
-
-#### MetalLB
-```
-helm repo add metallb https://metallb.github.io/metallb
-helm upgrade --install metallb metallb/metallb --create-namespace --namespace metallb --values=apps/metallb/values.yml
-kubectl -n metallb create -f apps/metallb/extra/metallb-k8s.yml
+cat <<EOF | kubectl create -f -
+apiVersion: longhorn.io/v1beta2
+kind: SystemRestore
+metadata:
+  name: restore-after-reinstall
+  namespace: longhorn-system
+spec:
+  systemBackup: reinstall
+EOF
 ```
 
-#### Traefik
-```
-helm repo add traefik https://traefik.github.io/charts
-helm upgrade --install traefik traefik/traefik --create-namespace --namespace traefik --values=apps/traefik/values.yml
-```
-
-#### Kubernetes-dashboard
-```
-helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard --values=apps/kubernetes-dashboard/values.yml
-kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
-```
-
-#### Argo CD
-```
-helm repo add argo https://argoproj.github.io/argo-helm
-helm upgrade --install argocd argo/argo-cd --create-namespace --namespace argocd --values=apps/argocd/values.yml
-kubectl -n argocd get secret argocd-initial-admin-secret -o yaml | grep pass | cut -d ":" -f 2 | sed -e "s/ //" | base64 -d
-kubectl -n argocd create -f apps/appofapps/appofapps.yml
-```
-
-### Useful Commands 
+## Useful Commands 
 #### Debug pod
 `kubectl -n kube-system debug -it coredns-78f679c54d-k5zcw --image=busybox:1.28 --target=coredns`
 
@@ -104,7 +92,8 @@ kubectl -n argocd create -f apps/appofapps/appofapps.yml
 #### Upgrade k8s
 `talosctl --nodes 192.168.4.10 upgrade-k8s --to 1.29.0`
 
-### Todo: 
-- undeploy kubernetes dashboard?
-- Maybe: longhorn, min.io, or wait until local provisioner supports predictable pathes
-- Maybe: Loki, Prometheus, Promtail, Node Exporter, Grafana
+#### Renew talosconfig cert (~/.talos/config)
+`talosctl config new`
+
+#### Renew kubeconfig (~/.kube/config, NASA2:~/kube/kubeconfig)
+`talosctl -n 192.168.4.6 kubeconfig`

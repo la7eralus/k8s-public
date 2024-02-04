@@ -1,0 +1,139 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: longhorn
+spec:
+  routes:
+    - match: Host(`longhorn.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: longhorn-frontend
+          port: http
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: longhorn-crypto
+spec:
+  encryptedData:
+    CRYPTO_KEY_CIPHER: AgAAEzUWLKdsP+p81623ZNddC9W5TWR5voVnBE5XOAw8Via43RL6C92Ygcy0aWu7Sw5jJP9nq1+lWMq4zOW6bp/s0O6I9mJXWfTuJPWdS7gHQr5YR9NeWOuSCqNenvkRp5glNav+mTTZ4WpQIYlKQIb4XvDFZ3YnYFN2bFF4J6iNq7qnkcSt9Tt6JS04xt4ugH8DO+a3PdhFxly+isoVcolxghiZme/GqCyfia5OgCFRRpBlX/IShOJFPHG0ZbFbW9gOLPjMiH1+j7OsmExJ4DFNDTB2GSFfsAC+5JgdxYU7uic68uiuQx5bDKXiAavdoMyD2b1ZFAOMB6pYTy0OSl1jouV4ayyvsaExNPn0+z6nLbet5iyh97htoEgSGyRZ6z7dmYpmrK6EVCSEsOas+q52adZGl4Y4igvpZ2XZmZiT+dDFjfKp7zOcBUv8Xxmv/GWUktqrXV+rTRlXe2fzXkbJG0GeGqh6n6LEbsB1hYEA7p1+N6coP+TOqyvSgznMbK9KesbmYqrQOBmpVaPiSQJan04oiSkJfUBjJlekonl8YNXO/yJ14C/ufdOa0sHje/tGLMUnuOfRiIs8A5xZep/3Ji2mmYka4qxCvHdN9Tda+qwqQE0V0jpG/oRvAxgapxGgzh81IT2AeaJIPv8MFsyFQArsDL+5lMHBL9PhLlzWiHA3GXTGw/uqcLOawo2GMxSHdTnPJRDd4oNh8YHrhRk=
+    CRYPTO_KEY_HASH: AgCVzsC+0wYcdCBwZMhgkz6syjd+VDzYMre4eCy5uWSsz4xbrBpIROuAypsw0hl4w/YUQPmrUsylGKLA6fFNe91nO7Hy4Cx/vFN2W21U5Msb+nLYuVatgMZpheAvD6QqSfHESTV8sVtZv52g7B6DLitmzRc7tLYzYRyzgNtJImLEiStxBm7BBvC+3o9ZZsaIknPeMfXm8EZWK6AgsNvY2b4KIn5UR3Z2ISh2xxlsL67pBEc4e9c/aKEYBPrkcMBcf+Nd+5KcKho2hMQ/P5Yj3i6gs5q1zHmaMCxpWZm05d7XAOzWlIC5SSHYs3Dm0JLdDL90LbF7B+RfYGGe6mDGI/jrDQiuqLX0crEsmk0GYmeUToUY7F4mle/PMweF0qDEJXk7s4wYn3+Cx9fgUJOsiN0xt9/xF2++7XTP7hGjTT2th4R5o5BHW9l4XysrsayXMKryq0SVGdo30NNmqcsAF/zHheE+h8h/aJtGB6+R8ZMjqF7ZXjQHMb7BMMOJZ7MZ2wn6nicQlDiCm8INUMCv4aUZNKcVcBPV59IpdSKGjgdqsjxvrxKwb+PJyAOPYm5OFL9mdbh2VRv6wJyP8SwqIbWs9CsqISHE0bDsNZ98qBp+nt3j2rVffY7dYo0lqCgTo6DpRAYsLLwSdG1rdILN+GX4ZqVAxp3zLp3lwyEXwHInP3OhmG8J8eO2adCHMFaUhWUjPJjLVbE=
+    CRYPTO_KEY_PROVIDER: AgAWMmQ7o8nF+qY5mGjoG2z1nch4PsxEuIKfE4iB6NH4sexznrjHcbSBNBjnfV02qUABQQ++LmqFBGaAo4A1PoRY4dyJ0ZV2S2sLxxkfulotTTJuVSU5x34wpMak0OweG3ewlsxgOANJj29SdOTgIq503dsDR6cT8SZtJMo4bXWnM8n0oYLCaLCuZ+xhTX9mnZvDojetg4XCeel2OfxnlSoLvCmwNlWiFyXwDavAYMfckKPrIoQDkrKwCCQvl48ehKW53gWecMONQHQ9tzCw7CUs3OBpBxrj1pg1uAT0XG7vnSjeX3abDrIU1L51GqVUu4ohP7sRPJ4awKo3PjkhEJRGA3qoCRz1nFCc1wvCDWBbh00vv1K8IkcT4O+Pcz1lI2bFY2jH/+Be8KHSA8f9QHsIcx+ZVHH0BaZXPna6cA8d/9Pge0/e6L1sWzyvTyCukD6eZ9VF+B36kVMk8fqW3MwMCe3K/YROqwr59pc/M2BsYi/rwQzh0pi6MWgLjdhxHQLj8l46rKP+DCiaEKVJ1Obiqq+sI3zeIOk9EZLYk5S6SaN2WUbkK2xGq5oJIwO9Y/I1/3Yjt7oB8ZHtQ52abV00qCTTFY40e/G3F5zZPfO5cYYWgadRUFk4i8iW9mHQE1oBVOyBTRxQTg1eLHe+/5rUURi9cnE13pIo9SebUeoq0CMrdypjhlY02Xtuq88PjykgpMHwvQY=
+    CRYPTO_KEY_SIZE: AgCLCYoQbS6x0zO6+HWFycHXu4Gl8JSk/1bS1Th8wfqfolwz3AXc3mNzrrsz2TTuu0zJ475RuF07S+Nbkdvds9u3t5LckKrybqWXXK+/YC3njgUYuLLdG4LqQPeBWlPZ+ZjRkFvRObdJWUzRR567fYkE+MpGywPCHKmwgMWte7v8R4vVqeZbNdJFgYOXQuVu4VoD38mIUTXlAAhvgBxa4jG+oE0TWXSJAsIYJGtNyD3C7kFS6Pyk9rPua8fYavIGFWLCdiwe1rQE8u8YxKTC42ANmdwgqlXe1fI6rPhP8t6m1lDKlJ7ju7rUXBmm2MQgUSZoTo9zMCnupYFaq1va1avh0aAVS967DEQz2wl/mouVy4JPjKNzfpuzSiD1QLeuS5OZ2vgFKDlXBcvh8C4SJR+i8oW/pgOgiNAl8OkYAPkziLLEf3+2LQhhPLvUS8iEUvuIFy0g8+eJd6PXsKNXKMcoxut3wqPmNX22uLF52HF5WEY2nsvxxm2Y2W5n4/BNHqI3IRRWJF0zF3fdf0kFQTC02gtZXpQqD1HbzK1J+KRvpE51yEU0ARyJbCcC50xD6VwnZhcO4CZYJCQcgA1j6SRnDfY4h+MVyP4B5HfJSmdboJ88Y5C2l/1HL08vGoJCmyiHSY36tYmhJSAl7P13WcrUCisAVD7dgbYS5JIAGtb0m+BNQOzkxHIWEPLeLcuIdOmhPrw=
+    CRYPTO_KEY_VALUE: AgBraQqXdbPiesaaz5KFkmQAAI81mQ3El+0gxxBXT7Usr1I0uLEmN28F47Rl+VP/WGIbVhvWWAOXPiVdfTWmAbYX6et0zlYBnydMR8bCDZE1VeBIHUhjcha+md0YFpnsbn+0GlsDBkeg9fvamEDRrPVyXZliS0cGwSiNjpV+HEb3ufT+E5wZ8qEO8K1lHV3XldlrBH225FChvDJ5qZHJcRiDf4Krv8tuGz7b7h7jSzJt2FNXG0/XOD+U+Ok79rbuZYW4k8h2HSq6WJ/I3Ku6AO2YO1tIruR5zlu/eutUu2rvBmuU8iCW85vtN9wBHRWz0njssvoYssb4vqstNpYLFr5i9akU02AXEQHYHPcGU2437WDY8kMDEaluvriT71On3Y47JmUGVoW6JrsdHP9TVlTck+h4NWGKBHzBi6Tg/cfXJUSnQggE82NmHW/K4QFp+WeLEp2HabNla1KHcj0GtOq2xGmyGhV+wX5xxHYoLorOyUgJODgWsc+MDonxxOsBZKQ4wiP43ctEfANTcpqag9hnUae6VEbkIdgMSpkZAwVfLjShA52x18xrpTSivO0Jpwje1luuGA7p77s54IJRbcePfJjMEOFXxph6kM+emJZhq7eJXRGoKzVg73/KoU2zCJdaUum/viSByx0EcyUbHx1T1SGGIfw1M2AuUL40cKoMtAf5reHGihaVVPA0sGnaoMiUDdiPOBU/guPcIZ6rHtk/oliT
+    CRYPTO_PBKDF: AgCUo9tZKUCiBmblbbGRJVwNCIzTeeWc+Ji3gAp+ZpSeCdNUvEhIWopZmBPA4O9RFz67QzZBvZgJPgpAjJZgtciSuE0twKvmc2MFsxIN40pWKDZonskZx8ibN3k6i8/j+cx0wOlX5EpHOaFQit0KiOLoYzP2pDlFLgLhD7+tN40kotYRW6yhR61TGJS3uZm/TO+7uPZQRA28XeaTSSXuZBvFfs+60w1+yHJ3qfym7DFKwPRJvc2Kc/RGCvUdjt02fDHFb65NlAVWBAaCfHFXcXpmmDi3d4eMDOQLR/ymMYcCqrXAS8jE8IrQQsS5LOMzP2iaOQsjqd3zgBBLn5qj45bHNup1X95I4DjbjCnX3BWJcd1i9Dm7qWcKBr34wgjpKXSKb7AYdX1lDPsLGBDcuLbcZcxh8h0GOxedNMaE/I0SFHh3izmFKbqe1ezzri5aAHm+i+V+zuZjIrqUaUQ1ce+diVGeUe7rZac+yyvbsrfU2az1fDqH4xqFj3UPeWYldOVGlnCIpH6jFOpspnd5wBw5W0LxfJlkR2mRMs67xGza8SKz2sdRUGEGA/VvnYPzYYhyy9BkvD0qFr6GjmOKX8jyo7CKsOZ+hPaooaWLfCzEMLhWGkcgpwb6CpEhMGyrOZxaTqmWKowdJh+YEuoKi8Hna+1j7HM0tXqiiw6ffVxNckVEzkcHc0vOpzkyA6XkftGDw91pDswJ
+  template:
+    metadata:
+      creationTimestamp: null
+      name: longhorn-crypto
+      namespace: longhorn-system
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-encrypted
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "2"
+  staleReplicaTimeout: "2880"
+  fsType: "xfs"
+  encrypted: "true"
+  dataLocality: "best-effort"
+  csi.storage.k8s.io/provisioner-secret-name: "longhorn-crypto"
+  csi.storage.k8s.io/provisioner-secret-namespace: "longhorn-system"
+  csi.storage.k8s.io/node-publish-secret-name: "longhorn-crypto"
+  csi.storage.k8s.io/node-publish-secret-namespace: "longhorn-system"
+  csi.storage.k8s.io/node-stage-secret-name: "longhorn-crypto"
+  csi.storage.k8s.io/node-stage-secret-namespace: "longhorn-system"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-encrypted-strict-local
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880"
+  fsType: "xfs"
+  encrypted: "true"
+  dataLocality: "strict-local"
+  csi.storage.k8s.io/provisioner-secret-name: "longhorn-crypto"
+  csi.storage.k8s.io/provisioner-secret-namespace: "longhorn-system"
+  csi.storage.k8s.io/node-publish-secret-name: "longhorn-crypto"
+  csi.storage.k8s.io/node-publish-secret-namespace: "longhorn-system"
+  csi.storage.k8s.io/node-stage-secret-name: "longhorn-crypto"
+  csi.storage.k8s.io/node-stage-secret-namespace: "longhorn-system"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: longhorn-system-backup
+spec:
+  schedule: "30 1 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: badouralix/curl-jq@sha256:7a90f1eeb6220b5bd79997a5a763e2833dabd8f8bf5419ef2e310f67b48619d7
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              #!/bin/sh
+              set -e
+
+              # number of backups to keep, including the current one
+              KEEP="3"
+
+              # URL for lonhorn service (controller)
+              LONGHORN_URL="http://longhorn-frontend.longhorn-system.svc"
+
+              BACKUP="system-backup-$(date --utc +%Y%m%d%H%M%S)"
+
+              # create task
+              echo "Starting system backup task"
+              curl -sf -o /dev/null -X POST -H 'Content-Type: application/json' -d "{\"name\":\"${BACKUP}\",\"volumeBackupPolicy\":\"always\"}" "${LONGHORN_URL}/v1/systembackups"
+
+              # wait for task completion
+              while true; do
+                  echo "Waiting for task completion"
+                  sleep 3
+                  STATUS=$(curl -sf "${LONGHORN_URL}/v1/systembackups" | jq -r ".data[] | select(.id == \"${BACKUP}\").state")
+                  if [ "1$STATUS" = "1Completed" ] || [ "1$STATUS" = "1Ready" ]; then
+                      break
+                  fi
+              done
+
+              # let it settle
+              sleep 10
+
+              # cleanup the old system backups - expected sorted output, from oldest to newest
+              for BACKUP_ID in $(curl -sf "${LONGHORN_URL}/v1/systembackups" | jq -r '.data[].id' | head -n -"${KEEP}"); do
+                  echo "Removing old backup ${BACKUP_ID}"
+                  curl -sf -X DELETE "${LONGHORN_URL}/v1/systembackups/${BACKUP_ID}"
+              done
+
+              # Cleanup old Volume system Backups - sorting manual from newest to oldest
+              for VOLUME in $(curl -sf "${LONGHORN_URL}/v1/volumes" | jq -r '.data[].id'); do
+                  for BACKUP_NAME in $(curl -sf -X POST "${LONGHORN_URL}/v1/backupvolumes/${VOLUME}?action=backupList" | jq -r '.data |= sort_by(.created)' | jq -r '.data[].name' | grep "^system" | head -n -"${KEEP}"); do
+                      echo "Removing Backup ${BACKUP_NAME} from Volume ${VOLUME}"
+                      curl -sf -o /dev/null -X POST -H 'Content-Type: application/json' -d "{\"name\":\"${BACKUP_NAME}\"}" "${LONGHORN_URL}/v1/backupvolumes/${VOLUME}?action=backupDelete"
+                  done
+              done
+          restartPolicy: Never

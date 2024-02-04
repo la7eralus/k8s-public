@@ -17,12 +17,19 @@ renovate:
       "platform": "github",
       "gitAuthor": "Renovate Bot <renovate-bot@github.com>",
       "autodiscover": false,
-      "printConfig": true,
+      "printConfig": false,
       "repositories": ["5olu7ion/k8s"],
       "automergeSchedule": ["after 2:15am, before 3:05am"]
     }
-  persistence:
-    cache:
-      enabled: true
-      storageClass: "local-static"
-      storageSize: "555Mi"
+
+securityContext:
+  fsGroup: 1000
+
+extraVolumes:
+  - name: renovate-cache-pvc
+    persistentVolumeClaim:
+      claimName: renovate-cache-pvc
+
+extraVolumeMounts:
+  - name: renovate-cache-pvc
+    mountPath: /tmp/renovate

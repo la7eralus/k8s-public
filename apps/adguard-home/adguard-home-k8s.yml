@@ -53,7 +53,7 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: data
+            claimName: adguard-home-data-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -80,17 +80,3 @@ spec:
   selector:
     app.kubernetes.io/instance: adguard-home
     app.kubernetes.io/name: adguard-home
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  name: data
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: local-static
-  volumeName: adguard-home-data

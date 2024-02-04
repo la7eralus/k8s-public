@@ -276,7 +276,7 @@ data:
             widget:
                 type: portainer
                 url: https://portainer.s3rv.dev
-                env: 5
+                env: 9
                 key: {{HOMEPAGE_VAR_PORTAINER_PW}}
         - Dashboard:
             href: https://dashboard.s3rv.dev
@@ -286,18 +286,10 @@ data:
             href: https://argocd.s3rv.dev
             description: Let's get stuff deployed!
             icon: si-argo-#EF7B4D
-        - Filebrowser:
-            href: https://filebrowser.s3rv.dev
-            description: "Files... Files everywhere"
-            icon: mdi-floppy-#2bbcff
-        - Syncthing-k8s:
-            href: https://syncthing-k8s.s3rv.dev
-            description: "Like rsync, but fancy"
-            icon: si-jsdelivr-#1ca5d5
-        - Syncthing-nasa2:
-            href: https://syncthing-nasa2.s3rv.dev
-            description: "Like rsync, but fancy"
-            icon: si-jsdelivr-#1ca5d5
+        - Longhorn:
+            href: https://longhorn.s3rv.dev
+            description: Mooooooh
+            icon: si-rancher-#0075A8
   widgets.yaml: |
     - resources:
         cpu: true

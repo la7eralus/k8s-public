@@ -54,7 +54,7 @@ spec:
       volumes:
         - name: redis
           persistentVolumeClaim:
-            claimName: redis
+            claimName: paperless-ngx-redis-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -70,73 +70,3 @@ spec:
   selector:
     app.kubernetes.io/instance: redis
     app.kubernetes.io/name: redis
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  name: redis
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: local-static
-  volumeName: paperless-ngx-redis-data
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  name: data
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: local-static
-  volumeName: paperless-ngx-data
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  name: media
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  storageClassName: local-static
-  volumeName: paperless-ngx-media
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  name: export
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: local-static
-  volumeName: paperless-ngx-export
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  name: consume
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: local-static
-  volumeName: paperless-ngx-consume

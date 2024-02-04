@@ -1,31 +1,38 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: argocd
+  name: longhorn
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
   labels:
     notification: "true"
 spec:
   syncPolicy:
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: privileged
+        pod-security.kubernetes.io/audit: privileged
+        pod-security.kubernetes.io/warn: privileged
     automated:
       selfHeal: true
       prune: true
     syncOptions:
       - CreateNamespace=true
   destination:
-    namespace: argocd
+    namespace: longhorn-system
     server: 'https://kubernetes.default.svc'
   sources:
-    - repoURL: 'https://argoproj.github.io/argo-helm'
-      chart: argo-cd
-      targetRevision: 5.53.13
+    - repoURL: 'https://charts.longhorn.io'
+      chart: longhorn
+      targetRevision: 1.6.0
       helm:
         valueFiles:
-          - $values/apps/argocd/values.yml
+          - $values/apps/longhorn/values.yml
     - repoURL: 'https://github.com/5olu7ion/k8s.git'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/5olu7ion/k8s.git'
-      path: apps/argocd/extra
+      path: apps/longhorn/extra
       targetRevision: HEAD
   project: default

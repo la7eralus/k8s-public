@@ -83,15 +83,15 @@ providers:
           uptime-kuma:
             service: uptime-kuma
             rule: Host(`uptime.s3rv.dev`)
-          syncthing-nasa2:
-            service: syncthing-nasa2
-            rule: Host(`syncthing-nasa2.s3rv.dev`)
           unicorn-pi:
             service: unicorn-pi
             rule: Host(`unicorn-pi.s3rv.dev`)
           adguard-home:
             service: adguard-home
             rule: Host(`adguard.s3rv.dev`)
+          calibre-web:
+            service: calibre-web
+            rule: Host(`calibre.s3rv.dev`)
         services:
           proxmox-alpha:
             loadBalancer:
@@ -116,11 +116,7 @@ providers:
           uptime-kuma:
             loadBalancer:
               servers:
-              - url: http://192.168.4.33:3100/
-          syncthing-nasa2:
-            loadBalancer:
-              servers:
-              - url: http://192.168.4.33:8384/
+              - url: http://192.168.4.33:3001/
           unicorn-pi:
             loadBalancer:
               servers:
@@ -129,6 +125,10 @@ providers:
             loadBalancer:
               servers:
               - url: http://192.168.4.10:8080/
+          calibre-web:
+            loadBalancer:
+              servers:
+              - url: http://192.168.4.33:8083/
 
 extraObjects: 
   - apiVersion: bitnami.com/v1alpha1

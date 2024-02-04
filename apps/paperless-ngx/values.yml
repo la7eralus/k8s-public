@@ -31,19 +31,15 @@ persistence:
   data:
     enabled: true
     mountPath: /usr/src/paperless/data
-    existingClaim: "data"
+    existingClaim: "paperless-ngx-data-pvc"
   media:
     enabled: true
     mountPath: /usr/src/paperless/media
-    existingClaim: "media"
+    existingClaim: "paperless-ngx-media-pvc"
   export:
-    enabled: true
-    mountPath: /usr/src/paperless/export
-    existingClaim: "export"
+    enabled: false
   consume:
-    enabled: true
-    mountPath: /usr/src/paperless/consume
-    existingClaim: "consume"
-    
+    enabled: false
+  
 redis:
   enabled: false

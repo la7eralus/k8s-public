@@ -1,0 +1,26 @@
+persistence:
+  defaultClass: false
+  reclaimPolicy: Retain
+
+csi:
+  attacherReplicaCount: 2
+  provisionerReplicaCount: 2
+  resizerReplicaCount: 2
+  snapshotterReplicaCount: 2
+
+longhornUI:
+  replicas: 1
+
+preUpgradeChecker:
+  jobEnabled: false
+
+defaultSettings:
+  defaultDataPath: /var/mnt/longhorn
+  backupTarget: nfs://192.168.4.33:/volume1/k8s/longhorn/
+  allowCollectingLonghornUsageMetrics: false
+  defaultDataLocality: best-effort
+  defaultReplicaCount: 2
+  defaultLonghornStaticStorageClass: longhorn-encrypted
+  replicaAutoBalance: least-effort
+  storageReservedPercentageForDefaultDisk: 15
+  allowRecurringJobWhileVolumeDetached: true
