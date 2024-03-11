@@ -1,5 +1,5 @@
 cronjob:
-  schedule: '*/30 * * * *'
+  schedule: '00 4,17 * * *'
   timeZone: 'Europe/Berlin'
 
 envFrom:
@@ -18,8 +18,8 @@ renovate:
       "gitAuthor": "Renovate Bot <renovate-bot@github.com>",
       "autodiscover": false,
       "printConfig": false,
-      "repositories": ["5olu7ion/k8s"],
-      "automergeSchedule": ["after 2:15am, before 3:05am"]
+      "repositories": ["la7eralus/k8s"],
+      "automergeSchedule": ["after 3:00am, before 5:00am"]
     }
 
 securityContext:

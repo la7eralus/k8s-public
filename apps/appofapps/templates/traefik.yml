@@ -20,11 +20,11 @@ spec:
   sources:
     - repoURL: 'https://traefik.github.io/charts'
       chart: traefik
-      targetRevision: 26.0.0
+      targetRevision: 26.1.0
       helm:
         valueFiles:
           - $values/apps/traefik/values.yml
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       ref: values
   project: default

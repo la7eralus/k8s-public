@@ -20,7 +20,7 @@ spec:
         app.kubernetes.io/name: adguard-home
     spec:
       containers:
-        - image: adguard/adguardhome:v0.107.43
+        - image: adguard/adguardhome:v0.107.45
           name: adguard-home
           command: ["/bin/sh"]
           args: ["/opt/adguardhome/data/startup/startagh.sh"]
@@ -80,3 +80,166 @@ spec:
   selector:
     app.kubernetes.io/instance: adguard-home
     app.kubernetes.io/name: adguard-home
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: adguard-home-unbound
+data:
+  unbound.conf: |-
+    server:
+      chroot: ""
+      logfile: ""
+      log-local-actions: no
+      log-queries: no
+      log-replies: no
+      # log lines that say why queries return SERVFAIL to clients
+      log-servfail: no
+      verbosity: 0
+      log-tag-queryreply: no
+
+      num-threads: 1
+      directory: "/etc/unbound"
+      port: 53
+      so-reuseport: yes
+      do-daemonize: no
+      use-syslog: no
+      statistics-interval: 0
+      statistics-cumulative: no
+
+      auto-trust-anchor-file: "/var/lib/unbound/root.key"
+      root-hints: "/var/lib/unbound/root.hints"
+      do-ip4: yes
+      prefer-ip4: yes
+      do-ip6: no
+      prefer-ip6: no
+      # udp must be enabled because healthz nslookup ( busybox variant ) is not supporting tcp
+      do-udp: yes
+      do-tcp: yes
+      tcp-upstream: no
+      udp-upstream-without-downstream: no
+
+      prefetch: yes
+      cache-max-ttl: 3600
+      cache-max-negative-ttl: 10
+      cache-min-ttl: 0
+
+      extended-statistics: yes
+
+      interface: 127.0.0.1
+      interface: 0.0.0.0
+
+      access-control: 127.0.0.1/32 allow
+      access-control: 10.96.0.0/12 allow
+      access-control: 10.244.0.0/16 allow
+
+      local-data: "health.check.unbound A 127.0.0.1"
+      local-data-ptr: "127.0.0.1 health.check.unbound"
+
+    remote-control:  
+      control-enable: yes
+      control-interface: 127.0.0.1
+      control-port: 8953
+      control-use-cert: no
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: adguard-home-unbound
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: adguard-home
+      app.kubernetes.io/name: unbound
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: adguard-home
+        app.kubernetes.io/name: unbound
+    spec:
+      containers:
+      - image: ghcr.io/pixelfederation/unbound:1.17.1_3
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 300
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: unbound
+        ports:
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 53
+          name: dns-udp
+          protocol: UDP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 300
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 20Mi
+        volumeMounts:
+        - mountPath: /etc/unbound/
+          name: unbound-conf
+          readOnly: true
+      - args:
+        - -quiet=true
+        - -period=10s 
+        - -cmd=nslookup health.check.unbound. 127.0.0.1:53 > /dev/null
+        image: gcr.io/google-containers/exechealthz:1.2
+        imagePullPolicy: IfNotPresent
+        name: healthz
+        ports:
+        - containerPort: 8080
+          name: healthz
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 2m
+            memory: 10Mi
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: adguard-home-unbound
+        name: unbound-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: adguard-home-unbound
+spec:
+  ports:
+  - name: dns-udp
+    port: 53
+    protocol: UDP
+    targetPort: dns-udp
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+    targetPort: dns-tcp
+  selector:
+    app.kubernetes.io/instance: adguard-home
+    app.kubernetes.io/name: unbound
+  type: ClusterIP

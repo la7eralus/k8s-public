@@ -1,0 +1,92 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openobserve
+  labels:
+    name: openobserve
+spec:
+  serviceName: openobserve
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openobserve
+      app: openobserve
+  template:
+    metadata:
+      labels:
+        name: openobserve
+        app: openobserve
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 10000
+        runAsGroup: 3000
+        runAsNonRoot: true
+      containers:
+        - name: openobserve
+          image: public.ecr.aws/zinclabs/openobserve:v0.7.2
+          envFrom:
+          - secretRef:
+              name: openobserve-creds
+          env:
+            - name: ZO_DATA_DIR
+              value: /data
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 512m
+              memory: 512Mi
+            requests:
+              cpu: 256m
+              memory: 50Mi
+          ports:
+            - containerPort: 5080
+              name: http
+          volumeMounts:
+          - name: data
+            mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: openobserve-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openobserve
+spec:
+  clusterIP: None
+  selector:
+    app: openobserve
+  ports:
+  - name: http
+    port: 5080
+    targetPort: 5080
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: openobserve
+spec:
+  routes:
+    - match: Host(`openobserve.s3rv.dev`)
+      kind: Rule
+      services:
+        - name: openobserve
+          port: http
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: openobserve-creds
+spec:
+  encryptedData:
+    ZO_ROOT_USER_EMAIL: AgC56Nc5k9mrHM8EH++1D3ZSveWa3ZjP8n+b5pDY2FmT9MspoU+w/kyPfGh/GP91ixl0OQx/sxu7RsLtuvw38uQl3YNtmdChAUIGqhIqOEjogbpQcodvCIOsf3VJ00RjZLG7DiaK1ej1NIoHiWjmFy1cCdNW/OQ0UNP8Ik7v6iVq8X9o0CM6AgZhQW1VVvwdLNUu376CgoDMSLCAhgTzadJJoNQquc1CISlr+97yv3LWFyGraItOMfvdzrYnsq2yOtUBtiIoPh60VTVDbuCA3jmsgD/xxEzgNEm70F4AFLLVdiD3iHMm0teD3sTem0Wk11LvbgQ7Wns/NfpL58XeawRSEtDRTJcvzWtFIR8j/H0LY2fR0cht37Xgo6Ha2opxu6iMWhDRyLenSAm35DWHEZqXh60zejHl7BSz9jMLIb9RUnFbZY2QGir04gYUU0OxSYd4ixuN6pQe/DmLfDA5+sfN6XCf2duZPEyd+h1qqIndK62R4aOsCtwN4QPpEpjGfFtcp5sIdpZZrdtNCocCBi8E4dmklZFKhgtXI5h5JUC64sovoiQDLY4TYFAlQtDdySdC4WXI8a2BKzlZUCaNBnReLipPaVRIxnQ6owomomHHd0dCqxcNnbTZseLQXjl2XLQCctFPWE/J9YMIoZ59GYWK0b7o0UCsAukOoBS5fjrwrjlheCf4ab/IaPEsrD+zOPUw/cNNzl2/mcj5YZLjXjqhypCO5Q==
+    ZO_ROOT_USER_PASSWORD: AgCOwFpmNn4yZ3KcHYHMyR+b8k4nzxfl2z57zrViGCDuDehktzE1x2/gNUUrqy/1uRV8FQR9YO5tDSApb4Kt2cEVDVUcuYyznW/ms6BmtIq3qWmu8v+ss4fmLw2E46uU1bohy2uEsXJOv3Agb6cmTHtjlEN3h8U3l81h7LRNtO1VixUgosXIK9Ko4Gzdalm7FlwjZxnDaeD2A7KCGT4u34W0pDiNWUFKukmd0LmJBrMAnXeNh4fIhU9rwDuLkJY6KUwfPwSks/p+V9OvwlOfNwqBHRzqQjAJo6RyFk3xY7G0/19jYjxMoGfEItS81GI7PMjqbduO81vB+4t8D7PA87xbV3K2lFk7irD26jq2hCJm6Fk1HtsAtizpvKLjPWwkOkVeWZKzCQTvsFuhJ7g2D54gu7Ask33TCCu9/JLi5rn8dFBTW3Sg84vl4TKMhYyORWPiAR8BDdfBSa8u86R/yVBC6CPIxAcK7wGySqa/anSa2PbJCgC+h2e7D9fadxQ5Q6kCUCyRDJZBGTBGwGOA0y26+mA+rFcs3LuupVRktmcqmJTYbmY2hQESdh5w8L1HCekiX2b/ukOSC5TLfMK64mJJUhPrGDT3iwpJ2SVtSrkGpFUQqZmTrYNDktEUj9+kt/AsyM6kmwpzIO4NTWREUqoFAbGKPzhe3VWanOJz0ZN0QG9qt1Rr4xmRSL5Stoi3Tnd0+SeiUckK0fQ3eWXf
+  template:
+    metadata:
+      creationTimestamp: null
+      name: openobserve-creds
+      namespace: openobserve

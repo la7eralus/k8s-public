@@ -16,7 +16,7 @@ spec:
     namespace: argocd
     server: 'https://kubernetes.default.svc'
   sources:
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       path: apps/appofapps/templates
   project: default

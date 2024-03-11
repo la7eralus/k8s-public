@@ -1,0 +1,46 @@
+global:
+   dnsService: "kube-dns"
+   dnsNamespace: "kube-system"
+   clusterDomain: "talos.s3rv.dev"
+
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: 'filesystem'
+
+singleBinary:
+  replicas: 1
+  extraVolumes:
+    - name: grafana-loki-pvc
+      persistentVolumeClaim:
+        claimName: grafana-loki-pvc
+  extraVolumeMounts:
+    - name: grafana-loki-pvc
+      mountPath: /var/loki
+  persistence:
+    enabled: false
+
+monitoring:
+  dashboards:
+    enabled: false
+  rules:
+    enabled: false
+    alerting: false
+  serviceMonitor:
+    enabled: false
+    metricsInstance:
+      enabled: false
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+  lokiCanary:
+    enabled: false
+
+test:
+  enabled: false
+
+gateway:
+  enabled: false

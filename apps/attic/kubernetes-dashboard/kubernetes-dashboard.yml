@@ -18,11 +18,11 @@ spec:
   sources:
     - repoURL: 'https://kubernetes.github.io/dashboard'
       chart: kubernetes-dashboard
-      targetRevision: 6.0.8
+      targetRevision: 7.1.1
       helm:
         valueFiles:
           - $values/apps/kubernetes-dashboard/values.yml
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       ref: values
   project: default

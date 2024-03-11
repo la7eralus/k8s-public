@@ -1,10 +1,8 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: longhorn
+  name: openobserve
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
   labels:
     notification: "true"
 spec:
@@ -20,19 +18,22 @@ spec:
     syncOptions:
       - CreateNamespace=true
   destination:
-    namespace: longhorn-system
+    namespace: openobserve
     server: 'https://kubernetes.default.svc'
   sources:
-    - repoURL: 'https://charts.longhorn.io'
-      chart: longhorn
-      targetRevision: 1.6.0
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
+      path: apps/openobserve/extra
+      targetRevision: HEAD
+    - repoURL: 'https://open-telemetry.github.io/opentelemetry-helm-charts'
+      chart: opentelemetry-operator
+      targetRevision: 0.47.0
+    - repoURL: 'https://charts.openobserve.ai'
+      chart: openobserve-collector
+      targetRevision: 0.3.0
       helm:
         valueFiles:
-          - $values/apps/longhorn/values.yml
+          - $values/apps/openobserve/values.yml
     - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       ref: values
-    - repoURL: 'https://github.com/la7eralus/k8s.git'
-      path: apps/longhorn/extra
-      targetRevision: HEAD
   project: default

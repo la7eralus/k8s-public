@@ -24,7 +24,7 @@ spec:
       helm:
         valueFiles:
           - $values/apps/nfs-subdir-external-provisioner/values.yml
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       ref: values
   project: default

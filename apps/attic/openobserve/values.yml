@@ -1,0 +1,21 @@
+exporters:
+  otlphttp/openobserve:
+    endpoint: http://openobserve:5080/api/default/
+    headers:
+      Authorization: Basic blablabla
+  otlphttp/openobserve_k8s_events:
+    endpoint: http://openobserve:5080/api/default/
+    headers:
+      Authorization: Basic blablabla
+
+agent:
+  receivers:
+    prometheus: {}
+
+gateway:
+  receivers:
+    prometheus: {}
+  service:
+    pipelines:
+      metrics:
+        receivers: [k8s_cluster, spanmetrics, servicegraph]

@@ -1,3 +1,4 @@
+## Prepare Reset
 #### Talosctl Config
 `export TALOSCONFIG=~/Downloads/github/k8s/talos/talosconfig`
 
@@ -24,7 +25,7 @@ EOF
 #### Bootstrap (after autoreboot)
 `talosctl bootstrap --nodes 192.168.4.6`
 
-#### Install Worker (Change persistent hostname in config)
+#### Install Worker if wanted (Change persistent hostname in config)
 `talosctl apply-config --insecure --nodes 192.168.4.7 --file talos/worker.yml`
 
 #### Bootstrap ArgoCD
@@ -47,9 +48,6 @@ helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-nam
 
 #### Get ArgoCD admin user token
 `kubectl -n argocd get secret argocd-initial-admin-secret -o yaml | grep pass | cut -d ":" -f 2 | sed -e "s/ //" | base64 -d`
-
-#### Get Kubernetes Dashboard Token
-`kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d`
 
 #### Restore longhorn System
 ```
@@ -81,19 +79,19 @@ EOF
 `sops --decrypt talos/controlplane.enc.yml > talos/controlplane.yml`
 
 #### Export sealed secrets key
-`kubectl get secret -n sealed-secrets -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml >sealed-secrets.yml`
+`kubectl get secret -n sealed-secrets -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml > sealed-secrets.yml`
 
 #### Upgrade talos (controlplane)
-`talosctl upgrade -n 192.168.4.10 --preserve -i factory.talos.dev/installer/7d0c9bb43d29c3a66af593485d6d95ae14f241c90678c9cc05a4cf99d928ec1b:v1.6.3`
+`talosctl upgrade -n 192.168.4.6 --preserve -i factory.talos.dev/installer/077514df2c1b6436460bc60faabc976687b16193b8a1290fda4366c69024fec2:v1.6.5`
 
 #### Upgrade talos (worker)
-`talosctl upgrade -n 192.168.4.77 -i factory.talos.dev/installer/a7bcadbc1b6d03c0e687be3a5d9789ef7113362a6a1a038653dfd16283a92b6b:v1.6.3`
+`talosctl upgrade -n 192.168.4.7 -i factory.talos.dev/installer/88d1f7a5c4f1d3aba7df787c448c1d3d008ed29cfb34af53fa0df4336a56040b:v1.6.5`
 
 #### Upgrade k8s
-`talosctl --nodes 192.168.4.10 upgrade-k8s --to 1.29.0`
+`talosctl --nodes 192.168.4.6 upgrade-k8s --to 1.29.0`
 
 #### Renew talosconfig cert (~/.talos/config)
 `talosctl config new`
 
-#### Renew kubeconfig (~/.kube/config, NASA2:~/kube/kubeconfig)
+#### Renew kubeconfig (\~/.kube/config, NASA2:\~/kube/kubeconfig)
 `talosctl -n 192.168.4.6 kubeconfig`

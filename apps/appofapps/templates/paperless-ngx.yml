@@ -18,14 +18,14 @@ spec:
   sources:
     - repoURL: 'https://charts.gabe565.com'
       chart: paperless-ngx
-      targetRevision: 0.13.0
+      targetRevision: 0.16.0
       helm:
         valueFiles:
           - $values/apps/paperless-ngx/values.yml
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       ref: values
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       path: apps/paperless-ngx/extra
       targetRevision: HEAD
   project: default

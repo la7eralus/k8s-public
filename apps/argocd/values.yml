@@ -2,6 +2,18 @@ global:
   env:
     - name: TZ
       value: Europe/Berlin
+  logging:
+    level: warn
+
+configs:
+  cm:
+    timeout.reconciliation: 30m
+
+applicationSet:
+  enabled: false
+
+dex:
+  enabled: false
 
 notifications:
   argocdUrl: https://argocd.s3rv.dev
@@ -24,7 +36,6 @@ notifications:
         Status: ✅
         Application: {{.app.metadata.name}}
         Message: Running new version.
-#        Version: {{.app.status.operationState.syncResult.revision}}
     template.app-health-degraded: |
       email:
         subject: Application {{.app.metadata.name}} has degraded.

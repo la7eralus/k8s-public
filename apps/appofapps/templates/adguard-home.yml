@@ -16,16 +16,7 @@ spec:
     namespace: adguard-home
     server: 'https://kubernetes.default.svc'
   sources:
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       path: apps/adguard-home
       targetRevision: HEAD
-    - repoURL: 'https://pixelfederation.github.io/unbound'
-      chart: unbound
-      targetRevision: 0.1.3
-      helm:
-        valueFiles:
-          - $values/apps/unbound/values.yml
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
-      targetRevision: HEAD
-      ref: values
   project: default

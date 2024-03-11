@@ -1,5 +1,4 @@
 controlplane.yml
-sealed-secrets.yml
-sealed-secrets.enc.yml
-talosconfig
 worker.yml
+sealed-secrets.yml
+talosconfig

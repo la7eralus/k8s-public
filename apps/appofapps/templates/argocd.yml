@@ -18,14 +18,14 @@ spec:
   sources:
     - repoURL: 'https://argoproj.github.io/argo-helm'
       chart: argo-cd
-      targetRevision: 5.53.13
+      targetRevision: 6.6.0
       helm:
         valueFiles:
           - $values/apps/argocd/values.yml
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       ref: values
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       path: apps/argocd/extra
       targetRevision: HEAD
   project: default

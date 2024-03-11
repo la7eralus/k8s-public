@@ -20,11 +20,11 @@ spec:
   sources:
     - repoURL: 'https://charts.jetstack.io'
       chart: cert-manager
-      targetRevision: v1.14.1
+      targetRevision: v1.14.4
       helm:
         valueFiles:
           - $values/apps/cert-manager/values.yml
-    - repoURL: 'https://github.com/5olu7ion/k8s.git'
+    - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       ref: values
   project: default

@@ -3,10 +3,11 @@ persistence:
   reclaimPolicy: Retain
 
 csi:
-  attacherReplicaCount: 2
-  provisionerReplicaCount: 2
-  resizerReplicaCount: 2
-  snapshotterReplicaCount: 2
+  kubeletRootDir: /var/lib/kubelet
+  attacherReplicaCount: 1
+  provisionerReplicaCount: 1
+  resizerReplicaCount: 1
+  snapshotterReplicaCount: 1
 
 longhornUI:
   replicas: 1
@@ -19,8 +20,9 @@ defaultSettings:
   backupTarget: nfs://192.168.4.33:/volume1/k8s/longhorn/
   allowCollectingLonghornUsageMetrics: false
   defaultDataLocality: best-effort
-  defaultReplicaCount: 2
+  defaultReplicaCount: 1
   defaultLonghornStaticStorageClass: longhorn-encrypted
   replicaAutoBalance: least-effort
-  storageReservedPercentageForDefaultDisk: 15
+  storageOverProvisioningPercentage: 200
+  storageReservedPercentageForDefaultDisk: 20
   allowRecurringJobWhileVolumeDetached: true

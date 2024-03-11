@@ -1,24 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: metallb
+  name: grafana
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-3"
   labels:
     notification: "true"
 spec:
-  ignoreDifferences:
-  - group: "apiextensions.k8s.io"
-    kind: CustomResourceDefinition
-    name: bgppeers.metallb.io
-    jsonPointers:
-    - /spec/conversion/webhook/clientConfig/caBundle
-  - group: "apiextensions.k8s.io"
-    kind: CustomResourceDefinition
-    name: addresspools.metallb.io
-    jsonPointers:
-    - /spec/conversion/webhook/clientConfig/caBundle
   syncPolicy:
     managedNamespaceMetadata:
       labels:
@@ -30,21 +17,27 @@ spec:
       prune: true
     syncOptions:
       - CreateNamespace=true
-      - RespectIgnoreDifferences=true
+      - ServerSideApply=true
   destination:
-    namespace: metallb
+    namespace: grafana
     server: 'https://kubernetes.default.svc'
   sources:
-    - repoURL: 'https://metallb.github.io/metallb'
-      chart: metallb
-      targetRevision: 0.14.3
+    - repoURL: 'https://grafana.github.io/helm-charts'
+      chart: loki
+      targetRevision: 5.43.6
       helm:
         valueFiles:
-          - $values/apps/metallb/values.yml
+          - $values/apps/grafana/values-grafana.yml
+    - repoURL: 'https://github.com/kube-logging/logging-operator.git'
+      targetRevision: HEAD
+      path: charts/logging-operator
+      helm:
+        valueFiles:
+          - $values/apps/grafana/values-logging-operator.yml
     - repoURL: 'https://github.com/la7eralus/k8s.git'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/la7eralus/k8s.git'
-      path: apps/metallb/extra
+      path: apps/grafana/extra
       targetRevision: HEAD
   project: default
