@@ -26,3 +26,4 @@ defaultSettings:
   storageOverProvisioningPercentage: 200
   storageReservedPercentageForDefaultDisk: 20
   allowRecurringJobWhileVolumeDetached: true
+  concurrentAutomaticEngineUpgradePerNodeLimit: 1

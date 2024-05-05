@@ -73,7 +73,7 @@ EOF
 `kubectl create secret generic cf-creds -n traefik --from-literal=CF_API_EMAIL='user@example.com' -o yaml | kubeseal --controller-name sealed-secrets --controller-namespace sealed-secrets -o yaml > cf-creds.yml`
 
 #### Encrypt with sops (public age Key)
-`sops --encrypt --encrypted-regex '^(content|tls.crt|tls.key|crt|key|secret|secretboxEncryptionSecret|token|id|ca|data)$' --age age1x... talos/controlplane.yml > talos/controlplane.enc.yml`
+`sops --encrypt --encrypted-regex '^(content|tls.crt|tls.key|crt|key|secret|secretboxEncryptionSecret|token|id|ca|data|environment)$' --age age1x... talos/controlplane.yml > talos/controlplane.enc.yml`
 
 #### Decrypt with sops (age key in ~/.config/sops/age/keys.txt)
 `sops --decrypt talos/controlplane.enc.yml > talos/controlplane.yml`
@@ -89,6 +89,9 @@ EOF
 
 #### Upgrade k8s
 `talosctl --nodes 192.168.4.6 upgrade-k8s --to 1.29.0`
+
+#### Force renew of LE cert
+`cmctl renew s3rv-dev -n traefik`
 
 #### Renew talosconfig cert (~/.talos/config)
 `talosctl config new`

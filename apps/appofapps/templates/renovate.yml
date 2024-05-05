@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: renovate
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
   labels:
     notification: "false"
 spec:
@@ -18,7 +20,7 @@ spec:
   sources:
     - repoURL: 'https://docs.renovatebot.com/helm-charts'
       chart: renovate
-      targetRevision: 37.233.1
+      targetRevision: 37.340.8
       helm:
         valueFiles:
           - $values/apps/renovate/values.yml

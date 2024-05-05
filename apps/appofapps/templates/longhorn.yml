@@ -25,7 +25,7 @@ spec:
   sources:
     - repoURL: 'https://charts.longhorn.io'
       chart: longhorn
-      targetRevision: 1.6.0
+      targetRevision: 1.6.1
       helm:
         valueFiles:
           - $values/apps/longhorn/values.yml

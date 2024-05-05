@@ -20,7 +20,7 @@ spec:
         app.kubernetes.io/name: adguard-home
     spec:
       containers:
-        - image: adguard/adguardhome:v0.107.45
+        - image: adguard/adguardhome:v0.107.48
           name: adguard-home
           command: ["/bin/sh"]
           args: ["/opt/adguardhome/data/startup/startagh.sh"]

@@ -20,7 +20,7 @@ spec:
         app.kubernetes.io/name: portainer-ee
     spec:
       containers:
-        - image: portainer/portainer-ee:2.19.4
+        - image: portainer/portainer-ee:2.20.2
           name: portainer-ee
           ports:
             - containerPort: 9000
@@ -137,7 +137,7 @@ spec:
       serviceAccountName: portainer-sa-clusteradmin
       containers:
       - name: portainer-agent
-        image: portainer/agent:2.19.4
+        image: portainer/agent:2.20.2
         imagePullPolicy: Always
         env:
         - name: AGENT_CLUSTER_ADDR

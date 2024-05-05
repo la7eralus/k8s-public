@@ -5,8 +5,5 @@ extraArgs:
 crds:
   enabled: true
 
-cainjector:
-  enabled: false
-
 prometheus:
   enabled: false

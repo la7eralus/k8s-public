@@ -19,7 +19,8 @@ renovate:
       "autodiscover": false,
       "printConfig": false,
       "repositories": ["la7eralus/k8s"],
-      "automergeSchedule": ["after 3:00am, before 5:00am"]
+      "automergeSchedule": ["after 3:00am, before 5:00am"],
+      "timezone": "Europe/Berlin"
     }
 
 securityContext:

@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: argocd
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
   labels:
     notification: "true"
 spec:
@@ -18,7 +20,7 @@ spec:
   sources:
     - repoURL: 'https://argoproj.github.io/argo-helm'
       chart: argo-cd
-      targetRevision: 6.6.0
+      targetRevision: 6.7.18
       helm:
         valueFiles:
           - $values/apps/argocd/values.yml

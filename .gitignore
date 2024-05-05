@@ -2,3 +2,4 @@ controlplane.yml
 worker.yml
 sealed-secrets.yml
 talosconfig
+/tmp
