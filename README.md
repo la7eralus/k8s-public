@@ -104,8 +104,8 @@ helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --create-nam
 #### AppofApps 
 `kubectl -n argocd create -f apps/appofapps/appofapps.yml -f apps/argocd/extra/argocd-k8s.yml`
 
-#### Get ArgoCD admin user token
-`kubectl -n argocd get secret argocd-initial-admin-secret -o yaml | grep pass | cut -d ":" -f 2 | sed -e "s/ //" | base64 -d`
+#### Set ArgoCD admin PW
+`kubectl patch secret -n argocd argocd-secret -p '{"stringData": { "admin.password": "'$(htpasswd -bnBC 10 "" 'mynewpw' | tr -d ':\n')'"}}'`
 
 #### Restore longhorn Systembackup
 ```
